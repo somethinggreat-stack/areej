@@ -6,7 +6,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-    <meta name="robots" content="noindex, nofollow">
+    <link rel="canonical" href="{{ url()->current() }}">
 
     <title>@yield('title', $mc['name']) — {{ $mc['city'] }}</title>
     <meta name="description" content="@yield('description', 'Halal Asian event catering in Birmingham. Weddings, functions, funerals, Khatam Shareef and corporate events for 20 to 2,000 guests.')">

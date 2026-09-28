@@ -52,6 +52,20 @@ Route::name('site.')->group(function (): void {
 });
 
 /**
+ * Sitemap for search engines: the public pages plus one per service, so a new
+ * service in config/catering_services.php is listed without touching this.
+ */
+Route::get('/sitemap.xml', function () {
+    $urls = collect(['site.home', 'site.services', 'site.menu', 'site.gallery', 'site.about', 'site.contact'])
+        ->map(fn (string $name): string => route($name))
+        ->merge(collect(config('catering_services'))->map(fn (array $service): string => route('site.service', $service['slug'])));
+
+    return response()
+        ->view('sitemap', ['urls' => $urls])
+        ->header('Content-Type', 'application/xml; charset=UTF-8');
+})->name('sitemap');
+
+/**
  * Language toggle. Urdu is the client's working language, English alongside.
  * The choice is saved against the account so it survives the next request.
  */
