@@ -64,15 +64,32 @@ function runLoader() {
 
     lockScroll();
     const q = gsap.utils.selector(el);
+    const veil = q('[data-veil]')[0];
+    const ring = q('[data-iris-ring]')[0];
+    const counter = q('[data-count]')[0];
+    const split = SplitText.create(q('[data-word]')[0], { type: 'chars', mask: 'chars' });
+
+    // Far enough to clear the corners, so the iris leaves nothing behind.
+    const radius = Math.hypot(window.innerWidth, window.innerHeight) / 2 + 60;
+    gsap.set(ring, { width: radius * 2, height: radius * 2, xPercent: -50, yPercent: -50, scale: 0 });
+
+    // Ambient counter-rotation, outside the timeline so a skip never jerks it.
+    const spin = [
+        gsap.to(q('[data-dial]'), { rotation: 360, svgOrigin: '0 0', duration: 48, ease: 'none', repeat: -1 }),
+        gsap.to(q('[data-star]'), { rotation: -360, svgOrigin: '0 0', duration: 72, ease: 'none', repeat: -1 }),
+    ];
+
+    const meter = { value: 0 };
 
     return new Promise((resolve) => {
         const tl = gsap.timeline({
             onComplete: () => {
+                spin.forEach((tween) => tween.kill());
+                split.revert();
                 sessionStorage.setItem('mc-loader-seen', '1');
                 document.documentElement.dataset.loaded = 'true';
                 unlockScroll();
                 el.remove();
-                resolve();
             },
         });
 
@@ -80,16 +97,39 @@ function runLoader() {
             tl.timeScale(1.4);
         }
 
-        tl.fromTo(q('[data-logo]'), { scale: 0.82, autoAlpha: 0 }, { scale: 1, autoAlpha: 1, duration: 1 })
-            .fromTo(q('[data-ring] circle'), { drawSVG: '0% 0%' }, { drawSVG: '0% 100%', duration: 1.05, ease: 'power2.inOut' }, 0.12)
-            .fromTo(q('[data-word] span'), { yPercent: 115 }, { yPercent: 0, duration: 0.85, stagger: 0.07 }, '-=0.62')
-            .fromTo(q('[data-rule]'), { scaleX: 0 }, { scaleX: 1, duration: 0.75, ease: 'expo.inOut' }, '-=0.55')
-            .fromTo(q('[data-sub]'), { yPercent: 110, autoAlpha: 0 }, { yPercent: 0, autoAlpha: 1, duration: 0.6 }, '-=0.5')
-            .to({}, { duration: 0.12 })
-            .to(q('[data-mark]'), { yPercent: -10, autoAlpha: 0, duration: 0.5, ease: 'power2.inOut' })
-            .to(q('[data-panel="top"]'), { yPercent: -101, duration: 0.9, ease: 'expo.inOut' }, '-=0.3')
-            .to(q('[data-panel="bottom"]'), { yPercent: 101, duration: 0.9, ease: 'expo.inOut' }, '<')
-            .to(q('[data-seam]'), { scaleX: 0, duration: 0.45, ease: 'expo.in' }, '<0.08');
+        // Build: bloom, frame, the star drawing itself, the emblem, the name.
+        tl.fromTo(q('[data-bloom]'), { autoAlpha: 0, scale: 0.8 }, { autoAlpha: 1, scale: 1, duration: 1.6, ease: 'power2.out' }, 0)
+            .fromTo(q('[data-frame] > span'), { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.8, stagger: 0.05 }, 0.1)
+            .fromTo(q('[data-meter]'), { autoAlpha: 0, y: 12 }, { autoAlpha: 1, y: 0, duration: 0.6 }, 0.2)
+            .fromTo(q('[data-draw]'), { drawSVG: '50% 50%' }, { drawSVG: '0% 100%', duration: 1.3, ease: 'power3.inOut', stagger: 0.12 }, 0.1)
+            .fromTo(q('[data-tick]'), { autoAlpha: 0, scale: 0, transformOrigin: '50% 50%' }, { autoAlpha: 1, scale: 1, duration: 0.5, stagger: 0.012 }, 0.35)
+            .fromTo(q('[data-glow]'), { autoAlpha: 0, scale: 0.6 }, { autoAlpha: 1, scale: 1, duration: 1.2 }, 0.8)
+            .fromTo(q('[data-logo]'), { autoAlpha: 0, scale: 0.7, filter: 'blur(14px)' }, { autoAlpha: 1, scale: 1, filter: 'blur(0px)', duration: 1.1 }, 0.85)
+            .fromTo(split.chars, { yPercent: 110, rotate: 6 }, { yPercent: 0, rotate: 0, duration: 0.9, stagger: { each: 0.035, from: 'center' } }, 1.25)
+            .fromTo(q('[data-word]'), { letterSpacing: '0.3em' }, { letterSpacing: '0.14em', duration: 1.6 }, 1.25)
+            .fromTo(q('[data-rule]'), { scaleX: 0 }, { scaleX: 1, duration: 0.8, ease: 'expo.inOut' }, 1.7)
+            .fromTo(q('[data-sub]'), { yPercent: 110 }, { yPercent: 0, duration: 0.7 }, 1.85)
+            .to(meter, {
+                value: 100,
+                duration: 2.5,
+                ease: 'power2.inOut',
+                onUpdate: () => { counter.textContent = String(Math.round(meter.value)).padStart(3, '0'); },
+            }, 0.2)
+            .fromTo(q('[data-progress]'), { scaleX: 0 }, { scaleX: 1, duration: 2.5, ease: 'power2.inOut' }, 0.2)
+            .to(q('[data-glow]'), { scale: 1.15, duration: 0.35, ease: 'power2.out', yoyo: true, repeat: 1 }, 2.7)
+
+            // Exit: the name lifts away, the star flies outward, the iris opens.
+            .addLabel('exit', 3.05)
+            .to(split.chars, { yPercent: -110, duration: 0.55, ease: 'power3.in', stagger: { each: 0.02, from: 'edges' } }, 'exit')
+            .to(q('[data-sub], [data-rule], [data-meter], [data-frame]'), { autoAlpha: 0, duration: 0.4, ease: 'power2.in' }, 'exit')
+            .to(q('[data-emblem] svg'), { scale: 2.6, rotation: 30, autoAlpha: 0, duration: 1.2, ease: 'expo.in' }, 'exit')
+            .to(q('[data-logo], [data-glow]'), { scale: 0.6, autoAlpha: 0, filter: 'blur(10px)', duration: 0.7, ease: 'power3.in' }, 'exit+=0.15')
+            // Hand off to the hero while the iris is still opening, so it animates in behind it.
+            .call(resolve, [], 'exit+=0.55')
+            .to(veil, { '--iris': `${radius}px`, duration: 1.25, ease: 'expo.inOut' }, 'exit+=0.45')
+            .to(ring, { scale: 1, duration: 1.25, ease: 'expo.inOut' }, 'exit+=0.45')
+            .to(ring, { autoAlpha: 1, duration: 0.2 }, 'exit+=0.45')
+            .to(ring, { autoAlpha: 0, duration: 0.5, ease: 'power2.in' }, 'exit+=1.2');
 
         const skip = () => {
             if (tl.progress() > 0.02 && tl.progress() < 0.97) {

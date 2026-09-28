@@ -11,7 +11,7 @@
 @endphp
 
 <div data-nav-panel id="site-menu" class="pointer-events-none fixed inset-0 z-[100] opacity-0" role="dialog" aria-modal="true" aria-label="Site navigation">
-    <div data-sheet class="grain relative flex h-[100svh] w-full flex-col overflow-y-auto overscroll-contain bg-navy">
+    <div data-sheet data-lenis-prevent class="grain relative flex h-[100svh] w-full flex-col overflow-y-auto overscroll-contain bg-navy">
         <div aria-hidden="true" class="brand-pattern pointer-events-none absolute inset-0 opacity-[0.05]"></div>
         <div aria-hidden="true" class="pointer-events-none absolute -top-1/3 left-1/2 h-[70vh] w-[70vw] -translate-x-1/2 rounded-full bg-royal/25 blur-[140px]"></div>
 
@@ -56,23 +56,29 @@
             </ul>
         </nav>
 
-        <div data-nav-aside class="relative z-10 grid shrink-0 gap-8 border-t border-cream/10 px-(--spacing-gutter) py-8 sm:grid-cols-2 lg:grid-cols-4">
+        {{-- On phones only the phone number, email and quote button are shown, so the
+             whole panel fits one screen; address and hours live on the contact page. --}}
+        <div data-nav-aside class="relative z-10 grid shrink-0 grid-cols-[1fr_auto] items-end gap-x-4 gap-y-6 border-t border-cream/10 px-(--spacing-gutter) pt-6 pb-[max(1.5rem,env(safe-area-inset-bottom))] sm:grid-cols-2 sm:items-start sm:gap-8 sm:py-8 lg:grid-cols-4">
             <div>
                 <p class="eyebrow mb-3 text-gold/70">Call the kitchen</p>
                 <a href="{{ $mc['phone_href'] }}" class="link-underline font-display text-xl text-cream">{{ $mc['phone'] }}</a>
             </div>
-            <div>
+            <a href="{{ route('site.contact') }}" data-nav-close
+               class="inline-flex h-11 items-center rounded-full bg-gold px-5 text-[0.62rem] font-bold tracking-[0.18em] whitespace-nowrap text-ink uppercase transition-colors hover:bg-gold-lit sm:hidden">
+                Get a Quote
+            </a>
+            <div class="col-span-2 sm:col-span-1">
                 <p class="eyebrow mb-3 text-gold/70">Email</p>
                 <a href="{{ $mc['email_href'] }}" class="link-underline text-sm break-all text-cream/80">{{ $mc['email'] }}</a>
             </div>
-            <div>
+            <div class="hidden sm:block">
                 <p class="eyebrow mb-3 text-gold/70">Find us</p>
                 <p class="text-sm leading-relaxed text-cream/70">
                     {{ $mc['address']['line1'] }}<br>
                     {{ $mc['address']['line2'] }}, {{ $mc['address']['city'] }} {{ $mc['address']['postcode'] }}
                 </p>
             </div>
-            <div class="flex flex-col items-start gap-3">
+            <div class="hidden flex-col items-start gap-3 sm:flex">
                 <p class="eyebrow text-gold/70">Open</p>
                 <p class="text-sm text-cream/70">{{ $mc['contact_hours'] }}</p>
                 <a href="{{ route('site.contact') }}" data-nav-close

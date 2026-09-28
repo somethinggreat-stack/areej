@@ -307,6 +307,14 @@
    COMPONENT PRIMITIVES
    ========================================================================== */
 
+/* Opening loader. --iris is the radius of the hole punched through the veil;
+   the loader timeline tweens it from 0 to past the corners of the viewport. */
+.loader-veil {
+  --iris: 0px;
+  -webkit-mask-image: radial-gradient(circle at 50% 50%, transparent var(--iris), #000 calc(var(--iris) + 1px));
+  mask-image: radial-gradient(circle at 50% 50%, transparent var(--iris), #000 calc(var(--iris) + 1px));
+}
+
 .line-mask {
   display: block;
   overflow: hidden;
