@@ -1,0 +1,14 @@
+# The app lives directly in public_html, so send every request into /public.
+# That keeps .env, vendor, storage and the rest of the app out of reach.
+<IfModule mod_rewrite.c>
+    Options -Indexes
+    RewriteEngine On
+
+    RewriteRule ^(\.well-known/.*)$ - [L]
+    RewriteCond %{REQUEST_URI} !^/public/
+    RewriteRule ^(.*)$ public/$1 [L]
+</IfModule>
+
+<FilesMatch "^\.">
+    Require all denied
+</FilesMatch>

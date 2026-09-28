@@ -1,0 +1,463 @@
+@import "tailwindcss";
+
+@source "../views";
+@source "../../app";
+
+/* ==========================================================================
+   MIDLAND CATERING â DESIGN SYSTEM
+   Royal blue + gold, cinematic dark grounds, warm cream editorial surfaces.
+   ========================================================================== */
+
+@theme {
+  /* --- Brand palette ---------------------------------------------------- */
+  --color-ink: #03081c;
+  --color-navy: #051436;
+  --color-navy-2: #071c4a;
+  --color-royal: #0b3fc6;
+  --color-royal-lit: #2a63f0;
+  --color-royal-deep: #062a8c;
+
+  --color-gold: #e8ac26;
+  --color-gold-lit: #f6cd6a;
+  --color-gold-deep: #b8811a;
+  /* Gold on cream tops out near 3:1. This is the readable gold for light
+     grounds — 5.8:1 on --color-cream. */
+  --color-gold-ink: #7a5410;
+
+  --color-cream: #f4eee2;
+  --color-paper: #fbf7ef;
+  --color-sand: #e5dbc8;
+  --color-char: #14120f;
+
+  /* --- Type ------------------------------------------------------------- */
+  --font-display: "Fraunces", "Times New Roman", serif;
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+
+  /* --- Easing ----------------------------------------------------------- */
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out-expo: cubic-bezier(0.87, 0, 0.13, 1);
+  --ease-out-quint: cubic-bezier(0.22, 1, 0.36, 1);
+
+  /* --- Layout ----------------------------------------------------------- */
+  --spacing-gutter: clamp(1.25rem, 4vw, 4.5rem);
+
+  /* --- Breakpoints ------------------------------------------------------ */
+  --breakpoint-xs: 30rem;
+}
+
+/* ==========================================================================
+   BASE
+   ========================================================================== */
+
+@layer base {
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+    min-width: 0;
+  }
+
+  :root {
+    --header-h: 5.25rem;
+    color-scheme: dark;
+    /* Fine film grain (SVG turbulence, inlined so there is no extra request) */
+    --grain-url: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.82' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)' opacity='0.42'/%3E%3C/svg%3E");
+    /* Subtle South-Asian inspired geometric lattice */
+    --pattern-url: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='78' height='78' viewBox='0 0 78 78'%3E%3Cg fill='none' stroke='%23e8ac26' stroke-opacity='0.16' stroke-width='1'%3E%3Cpath d='M39 4 74 39 39 74 4 39z'/%3E%3Cpath d='M39 20 58 39 39 58 20 39z'/%3E%3Ccircle cx='39' cy='39' r='4'/%3E%3Cpath d='M0 0h4v4H0zM74 0h4v4h-4zM0 74h4v4H0zM74 74h4v4h-4z' stroke-opacity='0.3'/%3E%3C/g%3E%3C/svg%3E");
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+    scroll-behavior: auto; /* Lenis owns smooth scrolling */
+  }
+
+  html.lenis,
+  html.lenis body {
+    height: auto;
+  }
+  .lenis.lenis-smooth {
+    scroll-behavior: auto !important;
+  }
+  .lenis.lenis-stopped {
+    overflow: clip;
+  }
+
+  body {
+    background-color: var(--color-ink);
+    color: var(--color-cream);
+    font-family: var(--font-sans);
+    font-synthesis-weight: none;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    overflow-x: clip;
+  }
+
+  ::selection {
+    background: var(--color-gold);
+    color: var(--color-ink);
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: var(--font-display);
+    font-weight: 400;
+    letter-spacing: -0.02em;
+    text-wrap: balance;
+  }
+
+  p {
+    text-wrap: pretty;
+  }
+
+  img,
+  svg,
+  video {
+    display: block;
+    max-width: 100%;
+  }
+
+  button,
+  input,
+  select,
+  textarea {
+    font: inherit;
+    color: inherit;
+  }
+
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-gold-lit);
+    outline-offset: 3px;
+    border-radius: 2px;
+  }
+
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-track {
+    background: var(--color-ink);
+  }
+  ::-webkit-scrollbar-thumb {
+    background: color-mix(in oklab, var(--color-gold) 45%, var(--color-navy));
+    border-radius: 999px;
+    border: 3px solid var(--color-ink);
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--color-gold);
+  }
+}
+
+/* ==========================================================================
+   UTILITIES
+   ========================================================================== */
+
+@utility container-x {
+  width: 100%;
+  margin-inline: auto;
+  padding-inline: var(--spacing-gutter);
+  max-width: 96rem;
+}
+
+@utility container-wide {
+  width: 100%;
+  margin-inline: auto;
+  padding-inline: var(--spacing-gutter);
+  max-width: 110rem;
+}
+
+@utility display-hero {
+  font-family: var(--font-display);
+  /* Bounded by viewport HEIGHT as well as width, so a three-line hero headline
+     plus its supporting content still fits above the fold on short laptop
+     screens instead of pushing the CTAs and imagery out of view. */
+  font-size: clamp(2.9rem, min(8.4vw, 12.5vh), 9rem);
+  line-height: 0.88;
+  letter-spacing: -0.035em;
+  font-weight: 300;
+}
+
+@utility display-xl {
+  font-family: var(--font-display);
+  font-size: clamp(2.4rem, 6.4vw, 6.5rem);
+  line-height: 0.93;
+  letter-spacing: -0.03em;
+  font-weight: 300;
+}
+
+@utility display-lg {
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 4.4vw, 3.85rem);
+  line-height: 0.99;
+  letter-spacing: -0.025em;
+  font-weight: 300;
+}
+
+@utility display-md {
+  font-family: var(--font-display);
+  font-size: clamp(1.5rem, 2.6vw, 2.4rem);
+  line-height: 1.08;
+  letter-spacing: -0.02em;
+  font-weight: 400;
+}
+
+@utility eyebrow {
+  font-family: var(--font-sans);
+  font-size: clamp(0.625rem, 0.72vw, 0.75rem);
+  font-weight: 600;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+}
+
+@utility body-lg {
+  font-size: clamp(1rem, 1.1vw, 1.175rem);
+  line-height: 1.68;
+}
+
+@utility text-gold-sheen {
+  background: linear-gradient(
+    100deg,
+    var(--color-gold-deep) 0%,
+    var(--color-gold-lit) 32%,
+    #fff3d0 47%,
+    var(--color-gold-lit) 62%,
+    var(--color-gold-deep) 100%
+  );
+  background-size: 220% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: sheen 7s var(--ease-in-out-expo) infinite;
+}
+
+@keyframes sheen {
+  0%,
+  100% {
+    background-position: 120% 0;
+  }
+  50% {
+    background-position: -20% 0;
+  }
+}
+
+@utility grain {
+  position: relative;
+  isolation: isolate;
+}
+
+.grain::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+  opacity: 0.3;
+  background-image: var(--grain-url);
+  background-size: 180px 180px;
+  animation: grain-shift 6s steps(6) infinite;
+  mix-blend-mode: overlay;
+}
+
+@keyframes grain-shift {
+  0% { background-position: 0 0; }
+  20% { background-position: -18px 12px; }
+  40% { background-position: 12px -22px; }
+  60% { background-position: -14px -12px; }
+  80% { background-position: 18px 8px; }
+  100% { background-position: 0 0; }
+}
+
+@utility brand-pattern {
+  background-image: var(--pattern-url);
+  background-size: 78px 78px;
+}
+
+@utility rule-gold {
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    color-mix(in oklab, var(--color-gold) 70%, transparent) 18%,
+    color-mix(in oklab, var(--color-gold) 70%, transparent) 82%,
+    transparent
+  );
+}
+
+@utility mask-edges {
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent);
+  mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent);
+}
+
+@utility no-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* ==========================================================================
+   COMPONENT PRIMITIVES
+   ========================================================================== */
+
+.line-mask {
+  display: block;
+  overflow: hidden;
+  padding-block: 0.08em;
+  margin-block: -0.08em;
+}
+.line-mask > span {
+  display: block;
+  will-change: transform;
+}
+
+.link-underline {
+  position: relative;
+  display: inline-block;
+}
+.link-underline::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -0.12em;
+  width: 100%;
+  height: 1px;
+  background: currentColor;
+  transform: scaleX(0);
+  transform-origin: right;
+  transition: transform 0.55s var(--ease-out-expo);
+}
+.link-underline:hover::after,
+.link-underline:focus-visible::after {
+  transform: scaleX(1);
+  transform-origin: left;
+}
+
+.swap-label {
+  position: relative;
+  display: block;
+  overflow: hidden;
+}
+.swap-label > span {
+  display: block;
+  transition: transform 0.5s var(--ease-out-expo);
+}
+.swap-label > span:last-child {
+  position: absolute;
+  inset: 0;
+  transform: translateY(105%);
+}
+.group\/btn:hover .swap-label > span:first-child,
+.group\/btn:focus-visible .swap-label > span:first-child {
+  transform: translateY(-105%);
+}
+.group\/btn:hover .swap-label > span:last-child,
+.group\/btn:focus-visible .swap-label > span:last-child {
+  transform: translateY(0);
+}
+
+/* Observer-driven entrances (see components/motion/Reveal.tsx).
+   Visible by default; only hidden once JS attaches the observer. */
+.reveal {
+  transition-property: opacity, transform, filter;
+  transition-timing-function: var(--ease-out-expo);
+}
+.reveal[data-shown="false"] {
+  opacity: 0;
+  transform: var(--reveal-from);
+  filter: blur(var(--reveal-blur));
+}
+.reveal[data-shown="true"] {
+  opacity: 1;
+  transform: none;
+  filter: blur(0);
+}
+
+.stagger-item {
+  transition:
+    opacity 0.9s var(--ease-out-expo),
+    transform 0.9s var(--ease-out-expo);
+}
+.stagger-group[data-shown="false"] > .stagger-item {
+  opacity: 0;
+  transform: translate3d(0, 2.15rem, 0);
+}
+.stagger-group[data-shown="true"] > .stagger-item {
+  opacity: 1;
+  transform: none;
+}
+/* Sequence the first dozen children; anything beyond lands with the last. */
+.stagger-group > .stagger-item:nth-child(1) { transition-delay: calc(var(--stagger) * 0); }
+.stagger-group > .stagger-item:nth-child(2) { transition-delay: calc(var(--stagger) * 1); }
+.stagger-group > .stagger-item:nth-child(3) { transition-delay: calc(var(--stagger) * 2); }
+.stagger-group > .stagger-item:nth-child(4) { transition-delay: calc(var(--stagger) * 3); }
+.stagger-group > .stagger-item:nth-child(5) { transition-delay: calc(var(--stagger) * 4); }
+.stagger-group > .stagger-item:nth-child(6) { transition-delay: calc(var(--stagger) * 5); }
+.stagger-group > .stagger-item:nth-child(7) { transition-delay: calc(var(--stagger) * 6); }
+.stagger-group > .stagger-item:nth-child(8) { transition-delay: calc(var(--stagger) * 7); }
+.stagger-group > .stagger-item:nth-child(n + 9) { transition-delay: calc(var(--stagger) * 8); }
+
+/* Editorial photo frame with a gold border that draws itself in */
+.photo-frame::before {
+  content: "";
+  position: absolute;
+  inset: clamp(0.5rem, 1.1vw, 1.1rem);
+  border: 1px solid color-mix(in oklab, var(--color-gold) 55%, transparent);
+  z-index: 3;
+  pointer-events: none;
+  clip-path: inset(0 100% 0 0);
+  transition: clip-path 1.15s var(--ease-out-expo) 0.2s;
+}
+.photo-frame[data-inview="true"]::before {
+  clip-path: inset(0 0 0 0);
+}
+
+/* The branded cursor ring is an accent that trails the real pointer â the
+   system cursor is never hidden. Hiding it costs users their most important
+   piece of feedback and breaks the expected pointer shapes (text, grab, link)
+   for the sake of decoration. */
+
+/* ==========================================================================
+   ACCESSIBILITY
+   ========================================================================== */
+
+.skip-link {
+  position: fixed;
+  top: 0.75rem;
+  left: 0.75rem;
+  z-index: 300;
+  transform: translateY(-180%);
+  transition: transform 0.3s var(--ease-out-expo);
+  background: var(--color-gold);
+  color: var(--color-ink);
+  padding: 0.7rem 1.15rem;
+  font-weight: 700;
+  font-size: 0.8rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  border-radius: 2px;
+}
+.skip-link:focus {
+  transform: translateY(0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+  .grain::after {
+    animation: none;
+  }
+}

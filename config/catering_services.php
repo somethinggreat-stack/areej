@@ -1,0 +1,147 @@
+<?php
+
+/**
+ * The seven occasions the client confirmed they cater for.
+ */
+return [
+    [
+        'slug' => 'wedding-catering',
+        'index' => '01',
+        'title' => 'Weddings',
+        'short' => 'Walimas, mehndis and receptions, catered from 20 to 2,000 guests.',
+        'lede' => 'The day is long, the guest list is large and the food is what everyone remembers afterwards. We plan around all three.',
+        'body' => [
+            'Build your own wedding menu from our appetisers, starters, mains, rice and breads, desserts and hot drinks. Nothing is fixed — you choose the dishes and we scale them to your numbers.',
+            'We work to your venue\'s rules and your timings. Our team arrives early, sets the buffet line, and stays until the last plate is cleared. Kitchen serving staff, waiter service and crockery hire are all available.',
+        ],
+        'image' => 'wedding-long-table',
+        'gallery' => [
+            'wedding-table-setting',
+            'biryani-platter-red',
+            'banquet-hall',
+            'mixed-grill-platter',
+        ],
+        'detail' => 'Mehndi · Nikkah · Walima · Reception',
+        'scale' => '20 – 2,000 guests',
+    ],
+    [
+        'slug' => 'parties-and-birthdays',
+        'index' => '02',
+        'title' => 'Parties & Birthdays',
+        'short' => 'Birthdays, engagements and celebrations at home or at a hired venue.',
+        'lede' => 'Smaller rooms, bigger personalities. The food does the hosting so you don\'t have to.',
+        'body' => [
+            'Milestone birthdays, engagement parties and family celebrations. Pick a few starters and a main or two, and we deliver it hot in serving dishes ready to go straight on the table.',
+            'For smaller gatherings you can order starters alone — the twenty-guest minimum applies to full catering, not to a starter order.',
+        ],
+        'image' => 'balloons',
+        'gallery' => [
+            'samosa-board',
+            'table-hands-overhead',
+            'confetti',
+            'starter-spread',
+        ],
+        'detail' => 'Birthdays · Engagements · Celebrations',
+        'scale' => '20 – 2,000 guests',
+    ],
+    [
+        'slug' => 'functions',
+        'index' => '03',
+        'title' => 'Functions',
+        'short' => 'Hall functions, community events and large private gatherings.',
+        'lede' => 'A full hall, a fixed serving window and several hundred people who all want to eat at once.',
+        'body' => [
+            'Community hall functions, charity events and large family occasions. We bring the buffet line, the chafing dishes and the staff to run it, and we work backwards from the time you need the food on the table.',
+            'We regularly cater unfamiliar venues. Tell us the hall and we will plan the access, the setup and the service around it.',
+        ],
+        'image' => 'banquet-hall',
+        'gallery' => [
+            'buffet-chafing',
+            'feast-overhead',
+            'venue-modern',
+            'curry-trio',
+        ],
+        'detail' => 'Hall functions · Community · Large gatherings',
+        'scale' => '20 – 2,000 guests',
+    ],
+    [
+        'slug' => 'funeral-catering',
+        'index' => '04',
+        'title' => 'Funerals',
+        'short' => 'Quiet, dignified catering arranged at short notice.',
+        'lede' => 'When timing is measured in hours rather than weeks, we answer the phone and we turn up.',
+        'body' => [
+            'Funeral catering handled with the discretion it deserves. Simple, generous, familiar food — pilau rice, masala, daal, roti and desi tea — delivered warm and set out without fuss.',
+            'We take same-day and short-notice bookings. One phone call is enough to start; we will handle the rest.',
+        ],
+        'image' => 'naan-dal',
+        'gallery' => [
+            'curry-trio',
+            'desi-tea',
+            'biryani-mint',
+            'buffet-chafing',
+        ],
+        'detail' => 'Funerals · Same-day short notice',
+        'scale' => '20 – 2,000 guests',
+    ],
+    [
+        'slug' => 'khatam-shareef',
+        'index' => '05',
+        'title' => 'Khatam Shareef',
+        'short' => 'Catering for Khatam Shareef and religious gatherings.',
+        'lede' => 'Food that is familiar, generous and served without anyone having to think about it.',
+        'body' => [
+            'Khatam Shareef, Quran Khwani and religious gatherings at home, at the mosque or in a community hall. Everything is Halal, prepared in our own kitchen and delivered ready to serve.',
+            'Sweet rice, gajrella, kheer and desi tea are the usual finish. Tell us the number and the time, and we will bring the rest.',
+        ],
+        'image' => 'biryani-platter-red',
+        'gallery' => [
+            'halwa-silver',
+            'pulao-chicken',
+            'desi-tea',
+            'naan-dal',
+        ],
+        'detail' => 'Khatam Shareef · Quran Khwani · Religious gatherings',
+        'scale' => '20 – 2,000 guests',
+    ],
+    [
+        'slug' => 'corporate-events',
+        'index' => '06',
+        'title' => 'Corporate Events',
+        'short' => 'Meetings, conferences and staff events fed on schedule.',
+        'lede' => 'Business catering is a logistics problem before it is a food problem. We treat it that way.',
+        'body' => [
+            'Working lunches, all-day conference refreshments, board meetings and staff events across Birmingham and the West Midlands. Everything is portioned and laid out so a full room can eat inside a short break.',
+            'Clear allergen information on every dish, Halal throughout, and a single point of contact from the quote to the invoice.',
+        ],
+        'image' => 'conference-hall',
+        'gallery' => [
+            'buffet-salad-bar',
+            'starter-spread',
+            'venue-modern',
+            'desi-tea',
+        ],
+        'detail' => 'Meetings · Conferences · Staff events',
+        'scale' => '20 – 2,000 guests',
+    ],
+    [
+        'slug' => 'business-and-home-events',
+        'index' => '07',
+        'title' => 'Business & Home Events',
+        'short' => 'Office gatherings and catering delivered to your front door.',
+        'lede' => 'The same kitchen that runs a thousand-cover function, scaled down to a dining room.',
+        'body' => [
+            'Team lunches, office openings, dinners at home and small private gatherings. We deliver hot in serving dishes, and can add staff, crockery and waiter service if you want the evening handled entirely.',
+            'Twenty guests is our minimum for full catering. For fewer than that, you can still order from the starters.',
+        ],
+        'image' => 'long-table-guests',
+        'gallery' => [
+            'guest-dining',
+            'mezze-table',
+            'platter-dips',
+            'restaurant-interior',
+        ],
+        'detail' => 'Office events · Home dining · Small gatherings',
+        'scale' => 'From 20 guests',
+    ],
+];

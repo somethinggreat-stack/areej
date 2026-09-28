@@ -1,0 +1,257 @@
+@import 'tailwindcss';
+
+@source '../views';
+@source '../../app';
+
+@custom-variant dark (&:where([data-theme='dark'], [data-theme='dark'] *));
+
+/* ==========================================================================
+   MIDLAND CATERING — OPERATIONS
+   Same brand palette as the public website so the two feel like one product.
+
+   Surfaces are addressed through semantic tokens (--surface, --line, --text…)
+   rather than raw colours, so dark mode is a token swap rather than a `dark:`
+   class on every element. Brand colours stay fixed in both themes.
+   ========================================================================== */
+
+@theme {
+    --color-ink: #03081c;
+    --color-navy: #051436;
+    --color-navy-2: #071c4a;
+    --color-navy-3: #0a2559;
+    --color-royal: #0b3fc6;
+    --color-royal-lit: #2a63f0;
+    --color-royal-deep: #062a8c;
+
+    --color-gold: #e8ac26;
+    --color-gold-lit: #f6cd6a;
+    --color-gold-deep: #b8811a;
+    --color-gold-ink: #7a5410;
+
+    --color-cream: #f4eee2;
+    --color-paper: #fbf7ef;
+    --color-sand: #e5dbc8;
+
+    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif;
+    --font-urdu: 'Noto Nastaliq Urdu', 'Jameel Noori Nastaleeq', serif;
+
+    --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+
+    /* Semantic surfaces — light theme is the default. */
+    --color-app: #fbf7ef;
+    --color-surface: #ffffff;
+    --color-surface-2: #f7f3ea;
+    --color-surface-3: #efe9dc;
+    --color-line: #e6e0d2;
+    --color-line-strong: #d5cdba;
+    --color-text: #03081c;
+    --color-text-muted: #5a5f6e;
+    --color-text-faint: #696e7b;
+
+    --color-good: #067a52;
+    --color-good-bg: #e6f5ee;
+    --color-warn: #92600a;
+    --color-warn-bg: #fdf3dd;
+    --color-bad: #b3261e;
+    --color-bad-bg: #fdecea;
+    --color-info: #14539a;
+    --color-info-bg: #e7f0fb;
+
+    --color-link: #0b3fc6;
+
+    /* Fixed in both themes: a notification badge must stay legible with white
+       text, so it cannot follow the theme's softened danger colour. */
+    --color-danger-solid: #b3261e;
+}
+
+/* Dark theme. Kept as a token override so no component has to know about it. */
+@layer theme {
+    [data-theme='dark'] {
+        --color-app: #070b18;
+        --color-surface: #0e1424;
+        --color-surface-2: #141b2e;
+        --color-surface-3: #1c2438;
+        --color-line: #232c42;
+        --color-line-strong: #33405c;
+        --color-text: #eef1f7;
+        --color-text-muted: #a3abbd;
+        --color-text-faint: #7b8499;
+
+        --color-good: #4ade9d;
+        --color-good-bg: #0d2b21;
+        --color-warn: #f2c14e;
+        --color-warn-bg: #33270c;
+        --color-bad: #f98a80;
+        --color-bad-bg: #351613;
+        --color-info: #7cb2f5;
+        --color-info-bg: #10243d;
+
+        --color-link: #7cb2f5;
+    }
+}
+
+@layer base {
+    html {
+        -webkit-text-size-adjust: 100%;
+        color-scheme: light;
+    }
+
+    html[data-theme='dark'] {
+        color-scheme: dark;
+    }
+
+    body {
+        background-color: var(--color-app);
+        color: var(--color-text);
+        font-family: var(--font-sans);
+        -webkit-font-smoothing: antialiased;
+    }
+
+    /* Urdu needs more line height and a nastaliq face to be readable. */
+    [lang='ur'],
+    .font-urdu {
+        font-family: var(--font-urdu);
+        line-height: 2.1;
+    }
+
+    /* Nastaliq's tall ascenders collide inside fixed-height controls. */
+    [lang='ur'] input,
+    [lang='ur'] select,
+    [lang='ur'] textarea,
+    [lang='ur'] button {
+        line-height: 1.6;
+    }
+
+    :focus-visible {
+        outline: 2px solid var(--color-royal-lit);
+        outline-offset: 2px;
+        border-radius: 3px;
+    }
+
+    /* Grid and flex items default to `min-width: auto`, so a single wide table
+       inside a column pushes the whole page sideways instead of scrolling
+       inside its own box. Scoped to the app shell so it cannot affect the
+       deliberately-wide layouts on the public site. */
+    #main :is(.grid, .flex) > * {
+        min-width: 0;
+    }
+
+    /* Belt and braces: whatever a page puts inside, the page itself never
+       scrolls sideways. `clip` rather than `hidden` so this does not turn the
+       main column into a scroll container and break `position: sticky`
+       inside it. Wide tables still scroll within their own box. */
+    #main {
+        overflow-x: clip;
+    }
+
+    /* Numbers stay left-to-right even on an RTL page — a phone number or a
+       price reversed is not a translation, it is a wrong number. */
+    .tabular-nums,
+    [dir='rtl'] .ltr-nums {
+        font-variant-numeric: tabular-nums;
+        direction: ltr;
+        unicode-bidi: isolate;
+    }
+
+    [dir='rtl'] .ltr-nums {
+        text-align: inherit;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        *,
+        *::before,
+        *::after {
+            animation-duration: 0.01ms !important;
+            transition-duration: 0.01ms !important;
+        }
+    }
+}
+
+/* --------------------------------------------------------------- surfaces */
+
+@utility card {
+    background: var(--color-surface);
+    border: 1px solid var(--color-line);
+    border-radius: 0.85rem;
+    box-shadow: 0 1px 2px rgb(3 8 28 / 0.04);
+}
+
+@utility card-flat {
+    background: var(--color-surface);
+    border: 1px solid var(--color-line);
+    border-radius: 0.85rem;
+}
+
+@utility label-sm {
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--color-text-muted);
+}
+
+/* Touch targets: the client's staff use phones, in a kitchen. */
+@utility tap {
+    min-height: 44px;
+    min-width: 44px;
+}
+
+/* Wide tables scroll inside their own box rather than the page.
+ *
+ * `position: relative` is load-bearing, not decoration. Without it the table's
+ * scrollable overflow propagates past this scroll box up to the initial
+ * containing block, and the whole page gains a horizontal scrollbar even though
+ * every ancestor measures exactly the viewport width. Making this element a
+ * containing block stops the overflow here, where it belongs. */
+@utility table-scroll {
+    position: relative;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+}
+
+@utility no-scrollbar {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+
+    &::-webkit-scrollbar {
+        display: none;
+    }
+}
+
+/* Skeleton shimmer for loading states. */
+@utility skeleton {
+    background: linear-gradient(
+        90deg,
+        var(--color-surface-2) 25%,
+        var(--color-surface-3) 37%,
+        var(--color-surface-2) 63%
+    );
+    background-size: 400% 100%;
+    animation: mc-shimmer 1.4s ease infinite;
+    border-radius: 0.4rem;
+}
+
+@keyframes mc-shimmer {
+    0% {
+        background-position: 100% 50%;
+    }
+    100% {
+        background-position: 0 50%;
+    }
+}
+
+@keyframes mc-rise {
+    from {
+        opacity: 0;
+        transform: translateY(0.5rem);
+    }
+    to {
+        opacity: 1;
+        transform: none;
+    }
+}
+
+@utility rise {
+    animation: mc-rise 0.28s var(--ease-out-expo) both;
+}

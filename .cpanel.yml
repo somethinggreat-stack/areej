@@ -1,0 +1,38 @@
+---
+deployment:
+  tasks:
+    # The live site: the app sits directly in public_html and the root .htaccess
+    # routes every request into public/. The cPanel clone of this repo must live
+    # somewhere else (e.g. /home/midlandca/repositories/midland), never in here.
+    - export DEPLOYPATH=/home/midlandca/public_html/
+    # Records a failed step without exiting. These tasks share ONE shell that cPanel
+    # drives; an exit kills it and the deploy page sits on "in progress" for ever.
+    # Check storage/logs/deploy-failed.txt in File Manager after a deploy.
+    - 'fail() { echo "=== DEPLOY STEP FAILED: $1 ==="; { date -u; echo "$1"; } >> "$DEPLOYPATH/storage/logs/deploy-failed.txt" 2>/dev/null; return 0; }'
+    - /bin/cp -R app $DEPLOYPATH || fail "copy app"
+    - /bin/cp -R bootstrap $DEPLOYPATH || fail "copy bootstrap"
+    - /bin/cp -R config $DEPLOYPATH || fail "copy config"
+    - /bin/cp -R database $DEPLOYPATH || fail "copy database"
+    - /bin/cp -R lang $DEPLOYPATH || fail "copy lang"
+    # public/ carries the compiled assets (public/build is committed; the host has no npm).
+    - /bin/cp -R public $DEPLOYPATH || fail "copy public"
+    - /bin/cp -R resources $DEPLOYPATH || fail "copy resources"
+    - /bin/cp -R routes $DEPLOYPATH || fail "copy routes"
+    - /bin/cp .htaccess $DEPLOYPATH || fail "copy .htaccess"
+    - /bin/cp artisan $DEPLOYPATH || fail "copy artisan"
+    - /bin/cp composer.json $DEPLOYPATH || fail "copy composer.json"
+    - /bin/cp composer.lock $DEPLOYPATH || fail "copy composer.lock"
+    # storage/ is runtime data and is NOT copied; .env lives only on the server and is
+    # never in git, so neither is touched. mkdir -p is a no-op where folders exist.
+    - mkdir -p "$DEPLOYPATH/storage/framework/cache/data" "$DEPLOYPATH/storage/framework/sessions" "$DEPLOYPATH/storage/framework/views" "$DEPLOYPATH/storage/logs" "$DEPLOYPATH/storage/app/public" "$DEPLOYPATH/storage/app/private" "$DEPLOYPATH/bootstrap/cache" || fail "storage tree"
+    - chmod -R 775 "$DEPLOYPATH/storage" "$DEPLOYPATH/bootstrap/cache" 2>&1 || true
+    # cPanel's bundled composer if present, otherwise whatever is on PATH.
+    - 'export COMPOSER_BIN="$(test -x /opt/cpanel/composer/bin/composer && echo /opt/cpanel/composer/bin/composer || command -v composer)"'
+    - cd $DEPLOYPATH && COMPOSER_MEMORY_LIMIT=-1 $COMPOSER_BIN install --no-dev --optimize-autoloader --no-interaction 2>&1 || fail "composer install"
+    - cd $DEPLOYPATH && php artisan optimize:clear 2>&1 || fail "optimize:clear"
+    # Schema changes only. Do NOT add db:seed here: DatabaseSeeder uses updateOrCreate
+    # on the team accounts and would reset every password to the placeholder.
+    - cd $DEPLOYPATH && php artisan migrate --force 2>&1 || fail "migrate"
+    - cd $DEPLOYPATH && php artisan optimize 2>&1 || fail "optimize"
+    - 'cd $DEPLOYPATH && date -u > storage/logs/deployed-at.txt 2>/dev/null; echo "=== DEPLOY FINISHED ==="'
+    # Sessions are deliberately NOT flushed, so nobody is logged out by a deploy.
