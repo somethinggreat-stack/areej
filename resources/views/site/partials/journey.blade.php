@@ -50,7 +50,7 @@
         <ul class="space-y-6">
             @foreach ($services as $service)
                 <li>
-                    <a href="{{ route('site.service', $service['slug']) }}" data-service-card data-cursor="Open"
+                    <a href="{{ route('site.service', $service['slug']) }}" data-service-card
                        class="group relative flex min-h-[25rem] flex-col justify-between overflow-hidden p-8 sm:min-h-[29rem] sm:p-10">
                         <x-site.img :name="$service['image']" :alt="$service['title']"
                                     sizes="(min-width: 1024px) 54vw, 92vw"

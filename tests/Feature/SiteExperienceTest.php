@@ -36,7 +36,7 @@ class SiteExperienceTest extends TestCase
     {
         foreach (['/', '/services', '/menu', '/gallery', '/about', '/contact'] as $path) {
             $this->get($path)
-                ->assertSee('data-cursor-ring', false)
+                ->assertDontSee('data-cursor-ring', false)
                 ->assertSee('data-transition', false)
                 ->assertSee('data-nav-panel', false);
         }

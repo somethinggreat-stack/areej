@@ -4,7 +4,7 @@ import { SplitText } from 'gsap/SplitText';
 import { DrawSVGPlugin } from 'gsap/DrawSVGPlugin';
 import Lenis from 'lenis';
 import {
-    initCursor, initPageTransitions, initCounters, initStatement,
+    initPageTransitions, initCounters, initStatement,
     initPinnedStory, initServicesJourney, initProcessTimeline, initCollage, initSpotlight,
 } from './modules/interactions';
 import { initGallery, initTestimonials, initQuoteSteps } from './modules/gallery';
@@ -374,7 +374,6 @@ document.addEventListener('DOMContentLoaded', () => {
     // Chrome first — these must work whether or not the loader plays.
     runNav();
     runHeader();
-    initCursor();
     initPageTransitions();
 
     // Section behaviour.

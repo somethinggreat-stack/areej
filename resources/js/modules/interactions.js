@@ -4,59 +4,6 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 const reduced = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 /* -------------------------------------------------------------------------
- * Branded cursor ring.
- *
- * The system cursor is never hidden — this trails alongside it. Replacing the
- * native pointer loses every shape the browser gives you for free (text beam,
- * grab, link) and leaves anyone with slow JS without a pointer at all.
- * ---------------------------------------------------------------------- */
-export function initCursor() {
-    if (reduced() || !window.matchMedia('(hover: hover) and (pointer: fine)').matches) return;
-
-    const ring = document.querySelector('[data-cursor-ring]');
-    const label = document.querySelector('[data-cursor-label]');
-    if (!ring || !label) return;
-
-    const rx = gsap.quickTo(ring, 'x', { duration: 0.45, ease: 'power3.out' });
-    const ry = gsap.quickTo(ring, 'y', { duration: 0.45, ease: 'power3.out' });
-    let visible = false;
-
-    const setState = (state, text) => {
-        if (state === 'label' && text) {
-            label.textContent = text;
-            gsap.to(ring, { width: 84, height: 84, backgroundColor: 'var(--color-gold)', borderColor: 'var(--color-gold)', duration: 0.5, ease: 'expo.out' });
-            gsap.to(label, { autoAlpha: 1, duration: 0.3 });
-        } else if (state === 'hover') {
-            gsap.to(ring, { width: 52, height: 52, backgroundColor: 'color-mix(in oklab, var(--color-gold) 14%, transparent)', borderColor: 'var(--color-gold)', duration: 0.45, ease: 'expo.out' });
-            gsap.to(label, { autoAlpha: 0, duration: 0.2 });
-        } else {
-            gsap.to(ring, { width: 30, height: 30, backgroundColor: 'transparent', borderColor: 'color-mix(in oklab, var(--color-gold) 78%, transparent)', duration: 0.45, ease: 'expo.out' });
-            gsap.to(label, { autoAlpha: 0, duration: 0.2 });
-        }
-    };
-
-    window.addEventListener('pointermove', (e) => {
-        if (!visible) {
-            visible = true;
-            gsap.to(ring, { autoAlpha: 1, duration: 0.35 });
-        }
-        rx(e.clientX);
-        ry(e.clientY);
-    }, { passive: true });
-
-    window.addEventListener('pointerover', (e) => {
-        const target = e.target?.closest?.('[data-cursor], a, button, input, textarea, select, [role="button"]');
-        if (!target) return setState('default');
-        const text = target.dataset.cursor;
-        text ? setState('label', text) : setState('hover');
-    }, { passive: true });
-
-    window.addEventListener('pointerdown', () => gsap.to(ring, { scale: 0.82, duration: 0.18 }));
-    window.addEventListener('pointerup', () => gsap.to(ring, { scale: 1, duration: 0.3 }));
-    document.addEventListener('pointerleave', () => gsap.to(ring, { autoAlpha: 0, duration: 0.25 }));
-}
-
-/* -------------------------------------------------------------------------
  * Branded page transition.
  *
  * A navy panel sweeps up behind a curved leading edge, the emblem fades in,

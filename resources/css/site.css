@@ -419,11 +419,6 @@
   clip-path: inset(0 0 0 0);
 }
 
-/* The branded cursor ring is an accent that trails the real pointer â the
-   system cursor is never hidden. Hiding it costs users their most important
-   piece of feedback and breaks the expected pointer shapes (text, grab, link)
-   for the sake of decoration. */
-
 /* ==========================================================================
    ACCESSIBILITY
    ========================================================================== */

@@ -47,7 +47,7 @@
             <div class="mt-14 grid auto-rows-[8.5rem] grid-flow-row-dense grid-cols-1 gap-4 sm:auto-rows-[9.5rem] sm:grid-cols-2 lg:auto-rows-[10.5rem] lg:grid-cols-3 lg:gap-5">
                 @foreach ($items as $item)
                     @php($tilt = [-0.8, 0.5, -0.35, 0.75, -0.6, 0.3][$loop->index % 6])
-                    <button type="button" data-tile data-cursor="View"
+                    <button type="button" data-tile
                             data-category="{{ $item['category'] }}"
                             data-caption="{{ $item['caption'] }}"
                             data-full="{{ asset('img/'.$item['file'].'.jpg') }}"

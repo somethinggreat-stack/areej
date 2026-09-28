@@ -200,7 +200,7 @@
                     @foreach ($menu as $cat)
                         <li class="border-b border-cream/12">
                             <a href="{{ route('site.menu') }}#cat-{{ $cat['id'] }}"
-                               data-spotlight-item data-index="{{ $loop->index }}" data-cursor="Menu"
+                               data-spotlight-item data-index="{{ $loop->index }}"
                                aria-describedby="spot-{{ $cat['id'] }}"
                                class="group/s relative flex items-center gap-5 py-6 sm:gap-7 sm:py-7">
                                 <span aria-hidden="true" data-spot-fill
