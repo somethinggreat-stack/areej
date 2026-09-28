@@ -77,6 +77,12 @@
                     <span>{{ __('Total') }}</span>
                     <span class="tabular-nums">£{{ number_format($order->total_amount / 100, 2) }}</span>
                 </div>
+                @if ($vat = vat_breakdown((int) $order->total_amount))
+                    <div class="flex justify-between text-text-muted">
+                        <span>{{ __('Of which VAT at :rate%', ['rate' => $vat['rate']]) }}</span>
+                        <span class="tabular-nums">{{ money($vat['vat']) }}</span>
+                    </div>
+                @endif
                 <div class="flex justify-between text-text-muted">
                     <span>{{ __('Paid') }}</span>
                     <span class="tabular-nums">£{{ number_format($order->paidAmount() / 100, 2) }}</span>

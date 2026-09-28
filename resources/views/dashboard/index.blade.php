@@ -32,20 +32,29 @@
     @endif
 
     {{-- --------------------------------------------------------- headline --}}
+    {{-- Each card only links where this person can go; cards about areas they
+         cannot open are left out rather than shown as a dead end. --}}
     <section class="mb-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <x-stat :label="__('Jobs today')" :value="$counts['today_jobs']" icon="calendar"
                 :hint="trans_choice('{0}Nothing on|{1}1 guest|[2,*]:count guests', $counts['today_guests'], ['count' => number_format($counts['today_guests'])])"
-                :href="route('calendar')" />
+                :href="$can['jobs'] ? route('calendar') : null" />
 
         <x-stat :label="__('Next 14 days')" :value="$counts['upcoming_jobs']" icon="clipboard"
-                :hint="__('Confirmed jobs coming up')" :href="route('orders', ['view' => 'upcoming'])" />
+                :hint="__('Jobs coming up')" :href="$can['jobs'] ? route('orders', ['view' => 'upcoming']) : null" />
 
-        <x-stat :label="__('On site now')" :value="$counts['on_site']" icon="clock"
-                :tone="$counts['on_site'] > 0 ? 'good' : 'neutral'"
-                :hint="__('Clocked in')" :href="route('attendance')" />
+        @if ($can['people'])
+            <x-stat :label="__('On site now')" :value="$counts['on_site']" icon="clock"
+                    :tone="$counts['on_site'] > 0 ? 'good' : 'neutral'"
+                    :hint="__('Clocked in')" :href="route('attendance')" />
+        @elseif ($hasTimesheet)
+            <x-stat :label="__('My timesheet')" :value="__('Open')" icon="clock"
+                    :hint="__('Your shifts and hours this week')" :href="route('my-timesheet')" />
+        @endif
 
-        <x-stat :label="__('Open quotes')" :value="$counts['open_quotes']" icon="file-text"
-                :hint="__('Draft or awaiting a reply')" :href="route('quotes')" />
+        @if ($can['quotes'])
+            <x-stat :label="__('Open quotes')" :value="$counts['open_quotes']" icon="file-text"
+                    :hint="__('Draft or awaiting a reply')" :href="route('quotes')" />
+        @endif
     </section>
 
     {{-- ------------------------------------------------------------ money --}}
@@ -75,7 +84,9 @@
         <section>
             <div class="mb-3 flex items-center justify-between gap-3">
                 <h2 class="label-sm">{{ __('Today') }}</h2>
-                <a href="{{ route('calendar') }}" class="-my-2 inline-flex min-h-[36px] items-center px-1 text-xs font-semibold text-link hover:underline">{{ __('Open the diary') }}</a>
+                @if ($can['jobs'])
+                    <a href="{{ route('calendar') }}" class="-my-2 inline-flex min-h-[36px] items-center px-1 text-xs font-semibold text-link hover:underline">{{ __('Open the diary') }}</a>
+                @endif
             </div>
 
             @if ($today->isEmpty())
@@ -84,7 +95,7 @@
             @else
                 <div class="card divide-y divide-line overflow-hidden">
                     @foreach ($today as $order)
-                        <a href="{{ route('orders.show', $order) }}" class="tap flex items-center gap-3 p-4 transition-colors hover:bg-surface-2">
+                        <{{ $can['jobs'] ? 'a' : 'div' }} @if ($can['jobs']) href="{{ route('orders.show', $order) }}" @endif class="tap flex items-center gap-3 p-4 transition-colors {{ $can['jobs'] ? 'hover:bg-surface-2' : '' }}">
                             <span class="w-14 shrink-0 text-center">
                                 <span class="block text-sm font-bold text-text tabular-nums">
                                     {{ $order->serve_time ? \Illuminate\Support\Str::substr($order->serve_time, 0, 5) : '—' }}
@@ -108,7 +119,7 @@
                                     <span class="block text-[0.68rem] text-text-faint">{{ __('prep') }}</span>
                                 </span>
                             @endif
-                        </a>
+                        </{{ $can['jobs'] ? 'a' : 'div' }}>
                     @endforeach
                 </div>
             @endif
@@ -118,7 +129,9 @@
         <section>
             <div class="mb-3 flex items-center justify-between gap-3">
                 <h2 class="label-sm">{{ __('Next up in the kitchen') }}</h2>
-                <a href="{{ route('prep') }}" class="-my-2 inline-flex min-h-[36px] items-center px-1 text-xs font-semibold text-link hover:underline">{{ __('Prep board') }}</a>
+                @if ($can['kitchen'])
+                    <a href="{{ route('prep') }}" class="-my-2 inline-flex min-h-[36px] items-center px-1 text-xs font-semibold text-link hover:underline">{{ __('Prep board') }}</a>
+                @endif
             </div>
 
             @if ($nextTasks->isEmpty())
@@ -128,13 +141,15 @@
                 <div class="card divide-y divide-line overflow-hidden">
                     @foreach ($nextTasks as $task)
                         <div class="flex items-center gap-3 p-4">
-                            <form method="POST" action="{{ route('prep.toggle', $task) }}" class="shrink-0">
-                                @csrf
-                                <button type="submit" aria-label="{{ __('Tick off :task', ['task' => $task->title]) }}"
-                                        class="tap grid place-items-center rounded-lg border border-line-strong text-text-faint transition-colors hover:border-good hover:text-good">
-                                    <x-icon name="check" class="size-4" />
-                                </button>
-                            </form>
+                            @if ($can['kitchen'])
+                                <form method="POST" action="{{ route('prep.toggle', $task) }}" class="shrink-0">
+                                    @csrf
+                                    <button type="submit" aria-label="{{ __('Tick off :task', ['task' => $task->title]) }}"
+                                            class="tap grid place-items-center rounded-lg border border-line-strong text-text-faint transition-colors hover:border-good hover:text-good">
+                                        <x-icon name="check" class="size-4" />
+                                    </button>
+                                </form>
+                            @endif
 
                             <span class="min-w-0 flex-1">
                                 <span class="block truncate text-sm font-medium text-text">{{ $task->title }}</span>
@@ -159,18 +174,22 @@
         <section>
             <div class="mb-3 flex items-center justify-between gap-3">
                 <h2 class="label-sm">{{ __('Coming up') }}</h2>
-                <a href="{{ route('orders') }}" class="-my-2 inline-flex min-h-[36px] items-center px-1 text-xs font-semibold text-link hover:underline">{{ __('All jobs') }}</a>
+                @if ($can['jobs'])
+                    <a href="{{ route('orders') }}" class="-my-2 inline-flex min-h-[36px] items-center px-1 text-xs font-semibold text-link hover:underline">{{ __('All jobs') }}</a>
+                @endif
             </div>
 
             @if ($upcoming->isEmpty())
                 <x-empty icon="clipboard" :title="__('No jobs booked')"
                          :body="__('Once a quote is accepted the job appears here.')">
-                    <x-btn size="sm" :href="route('quotes.create')" icon="plus">{{ __('Raise a quote') }}</x-btn>
+                    @if ($can['quotes'])
+                        <x-btn size="sm" :href="route('quotes.create')" icon="plus">{{ __('Raise a quote') }}</x-btn>
+                    @endif
                 </x-empty>
             @else
                 <div class="card divide-y divide-line overflow-hidden">
                     @foreach ($upcoming as $order)
-                        <a href="{{ route('orders.show', $order) }}" class="tap flex items-center gap-3 p-4 transition-colors hover:bg-surface-2">
+                        <{{ $can['jobs'] ? 'a' : 'div' }} @if ($can['jobs']) href="{{ route('orders.show', $order) }}" @endif class="tap flex items-center gap-3 p-4 transition-colors {{ $can['jobs'] ? 'hover:bg-surface-2' : '' }}">
                             <span class="w-14 shrink-0 text-center">
                                 <span class="block text-[0.68rem] font-semibold text-text-faint uppercase">{{ $order->event_date->format('M') }}</span>
                                 <span class="block text-base font-bold text-text tabular-nums">{{ $order->event_date->format('j') }}</span>
@@ -182,10 +201,10 @@
                                     @if ($order->venue) · {{ $order->venue }} @endif
                                 </span>
                             </span>
-                            @if (auth()->user()->canSeeFinancials() && $order->balanceAmount() > 0)
+                            @if ($can['money'] && $order->balanceAmount() > 0)
                                 <x-money :pence="$order->balanceAmount()" tone="warn" class="shrink-0 text-xs font-semibold" />
                             @endif
-                        </a>
+                        </{{ $can['jobs'] ? 'a' : 'div' }}>
                     @endforeach
                 </div>
             @endif

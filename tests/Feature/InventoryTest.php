@@ -327,7 +327,11 @@ class InventoryTest extends TestCase
     {
         $this->manager->update(['is_active' => false]);
 
-        $this->actingAs($this->manager)->get('/dashboard/inventory')->assertForbidden();
+        $this->actingAs($this->manager)->get('/dashboard/inventory')
+            ->assertRedirect(route('login'))
+            ->assertSessionHasErrors('email');
+
+        $this->assertGuest();
     }
 
     public function test_the_dashboard_needs_a_login(): void

@@ -1,5 +1,7 @@
 <?php
 
+use App\Models\Setting;
+
 if (! function_exists('qty')) {
     /**
      * Format a stock quantity for display.
@@ -30,5 +32,28 @@ if (! function_exists('money')) {
     function money(int|float|null $pence): string
     {
         return '£'.number_format(((int) $pence) / 100, 2);
+    }
+}
+
+if (! function_exists('vat_breakdown')) {
+    /**
+     * The VAT inside a price, when the business is VAT registered.
+     *
+     * Midland quotes the public VAT-inclusive, so the VAT is carved out of the
+     * total rather than added on top: what the customer pays never changes
+     * when the setting is switched on, only what the paperwork shows.
+     *
+     * @return array{rate: int, net: int, vat: int}|null Pence, or null when not registered.
+     */
+    function vat_breakdown(int $grossPence): ?array
+    {
+        if (! Setting::get('vat_registered', false)) {
+            return null;
+        }
+
+        $rate = (int) Setting::get('vat_percent', 20);
+        $vat = (int) round($grossPence * $rate / (100 + $rate));
+
+        return ['rate' => $rate, 'net' => $grossPence - $vat, 'vat' => $vat];
     }
 }

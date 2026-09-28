@@ -25,6 +25,18 @@ class DashboardController extends Controller
     {
         $user = $request->user();
 
+        Quote::expireOverdue();
+
+        // What this person can open, so the page never offers a link that
+        // answers "no access".
+        $can = [
+            'jobs' => $user->hasRoleLevel(30),
+            'quotes' => $user->canHandleQuotes(),
+            'kitchen' => $user->hasRoleLevel(50),
+            'people' => $user->hasRoleLevel(80),
+            'money' => $user->canSeeFinancials(),
+        ];
+
         $monthStart = now()->startOfMonth();
         $monthEnd = now()->endOfMonth();
 
@@ -32,9 +44,11 @@ class DashboardController extends Controller
         $upcoming = $this->feed->upcoming(14);
 
         return view('dashboard.index', [
+            'can' => $can,
+            'hasTimesheet' => $user->staffProfile !== null,
             'today' => $today,
             'upcoming' => $upcoming->take(6),
-            'alerts' => $this->feed->alerts(),
+            'alerts' => $this->feed->alerts($user),
 
             'money' => $user->canSeeFinancials()
                 ? $this->feed->financials($monthStart, $monthEnd)

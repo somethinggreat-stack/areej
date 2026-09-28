@@ -76,10 +76,12 @@
                     </p>
 
                     <div class="mt-4 flex flex-wrap gap-2">
-                        <form method="POST" action="{{ route('enquiries.quote', $enquiry) }}">
-                            @csrf
-                            <x-btn type="submit" icon="file-text">{{ __('Raise a quote') }}</x-btn>
-                        </form>
+                        @can('handle-quotes')
+                            <form method="POST" action="{{ route('enquiries.quote', $enquiry) }}">
+                                @csrf
+                                <x-btn type="submit" icon="file-text">{{ __('Raise a quote') }}</x-btn>
+                            </form>
+                        @endcan
 
                         <form method="POST" action="{{ route('enquiries.convert', $enquiry) }}">
                             @csrf
@@ -93,7 +95,7 @@
             @endif
 
             {{-- ----------------------------------------------------- quotes --}}
-            @if ($enquiry->quotes->isNotEmpty())
+            @if ($enquiry->quotes->isNotEmpty() && auth()->user()->canHandleQuotes())
                 <div class="card overflow-hidden">
                     <div class="border-b border-line px-5 py-4">
                         <h2 class="text-sm font-semibold text-text">{{ __('Quotes raised') }}</h2>

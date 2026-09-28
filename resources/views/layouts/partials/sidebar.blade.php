@@ -10,13 +10,14 @@
             'items' => [
                 ['route' => 'dashboard', 'icon' => 'grid', 'label' => __('Overview'), 'level' => 10],
                 ['route' => 'calendar', 'icon' => 'calendar', 'label' => __('Diary'), 'level' => 30],
+                ['route' => 'my-timesheet', 'icon' => 'clock', 'label' => __('My timesheet'), 'level' => 10, 'when' => fn ($user) => $user->staffProfile !== null],
             ],
         ],
         [
             'label' => __('Sales'),
             'items' => [
                 ['route' => 'enquiries', 'icon' => 'inbox', 'label' => __('Enquiries'), 'level' => 30],
-                ['route' => 'quotes', 'icon' => 'file-text', 'label' => __('Quotes'), 'level' => 30],
+                ['route' => 'quotes', 'icon' => 'file-text', 'label' => __('Quotes'), 'level' => 30, 'when' => fn ($user) => $user->canHandleQuotes()],
                 ['route' => 'orders', 'icon' => 'clipboard', 'label' => __('Orders'), 'level' => 30],
             ],
         ],
@@ -56,6 +57,7 @@
         [
             'label' => __('System'),
             'items' => [
+                ['route' => 'users', 'icon' => 'key', 'label' => __('Logins'), 'level' => 80],
                 ['route' => 'activity', 'icon' => 'activity', 'label' => __('Activity'), 'level' => 80],
                 ['route' => 'settings', 'icon' => 'settings', 'label' => __('Settings'), 'level' => 100],
             ],
@@ -68,7 +70,9 @@
         ->map(function (array $group) use ($user): array {
             $group['items'] = array_values(array_filter(
                 $group['items'],
-                fn (array $item) => ($user?->hasRoleLevel($item['level']) ?? false) && \Illuminate\Support\Facades\Route::has($item['route'])
+                fn (array $item) => ($user?->hasRoleLevel($item['level']) ?? false)
+                    && (! isset($item['when']) || $item['when']($user))
+                    && \Illuminate\Support\Facades\Route::has($item['route'])
             ));
 
             return $group;

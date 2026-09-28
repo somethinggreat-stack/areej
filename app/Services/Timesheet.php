@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\AttendanceRecord;
+use App\Models\Setting;
 use App\Models\StaffProfile;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Collection;
@@ -16,8 +17,13 @@ use Illuminate\Support\Collection;
  */
 class Timesheet
 {
-    /** Hours past which the overtime rate applies, per week. */
+    /** Hours past which the overtime rate applies, per week, unless Settings says otherwise. */
     public const OVERTIME_AFTER_HOURS = 40;
+
+    public function overtimeAfterHours(): int
+    {
+        return (int) Setting::get('overtime_after_hours', self::OVERTIME_AFTER_HOURS);
+    }
 
     public function weekStart(?CarbonImmutable $anyDayInWeek = null): CarbonImmutable
     {
@@ -57,8 +63,9 @@ class Timesheet
         // Cast explicitly: min() against the int constant would hand back an
         // int the moment the cap bites, so the shape of this array would change
         // depending on how much somebody worked.
-        $normalHours = (float) min($totalHours, self::OVERTIME_AFTER_HOURS);
-        $overtimeHours = (float) round(max(0, $totalHours - self::OVERTIME_AFTER_HOURS), 2);
+        $overtimeAfter = $this->overtimeAfterHours();
+        $normalHours = (float) min($totalHours, $overtimeAfter);
+        $overtimeHours = (float) round(max(0, $totalHours - $overtimeAfter), 2);
 
         // Prefer the rate frozen on the shift; fall back to the profile for
         // shifts that have not been approved yet.

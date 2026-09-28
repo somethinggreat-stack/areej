@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Dashboard\AccountController;
 use App\Http\Controllers\Dashboard\ActivityController;
 use App\Http\Controllers\Dashboard\AttendanceController;
 use App\Http\Controllers\Dashboard\CalendarController;
@@ -8,6 +9,7 @@ use App\Http\Controllers\Dashboard\EnquiryInboxController;
 use App\Http\Controllers\Dashboard\EquipmentController;
 use App\Http\Controllers\Dashboard\ExpenseController;
 use App\Http\Controllers\Dashboard\InventoryItemController;
+use App\Http\Controllers\Dashboard\MyTimesheetController;
 use App\Http\Controllers\Dashboard\OrderController;
 use App\Http\Controllers\Dashboard\OrderPaymentController;
 use App\Http\Controllers\Dashboard\PrepController;
@@ -19,6 +21,7 @@ use App\Http\Controllers\Dashboard\StaffController;
 use App\Http\Controllers\Dashboard\StockCountController;
 use App\Http\Controllers\Dashboard\SupplierController;
 use App\Http\Controllers\Dashboard\TimesheetController;
+use App\Http\Controllers\Dashboard\UserController;
 use App\Http\Controllers\Dashboard\WasteLogController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EnquiryController;
@@ -85,7 +88,7 @@ Route::get('/locale/{locale}', function (Request $request, string $locale): Redi
 |
 | Grouped by the minimum role level that may reach each area:
 |
-|   10  staff        own timesheet only
+|   10  staff        own timesheet and account only
 |   30  sales        enquiries, quotes, orders
 |   40  purchasing   supplier orders and receiving
 |   50  kitchen      stock, counts, waste, recipes, prep
@@ -95,8 +98,12 @@ Route::get('/locale/{locale}', function (Request $request, string $locale): Redi
 |
 */
 
-Route::middleware(['auth'])->prefix('dashboard')->group(function (): void {
+Route::middleware(['auth', 'active'])->prefix('dashboard')->group(function (): void {
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
+
+    /* ------------------------------------------------- everyone, own data */
+    Route::get('my-timesheet', [MyTimesheetController::class, 'index'])->name('my-timesheet');
+    Route::get('account', [AccountController::class, 'show'])->middleware('password.confirm')->name('account');
 
     /* ------------------------------------------------------------ sales */
     Route::middleware('role:30')->group(function (): void {
@@ -106,38 +113,46 @@ Route::middleware(['auth'])->prefix('dashboard')->group(function (): void {
         Route::get('enquiries/{enquiry}', [EnquiryInboxController::class, 'show'])->name('enquiries.show');
         Route::patch('enquiries/{enquiry}', [EnquiryInboxController::class, 'update'])->name('enquiries.update');
         Route::delete('enquiries/{enquiry}', [EnquiryInboxController::class, 'destroy'])->name('enquiries.destroy');
-        Route::post('enquiries/{enquiry}/quote', [EnquiryInboxController::class, 'quote'])->name('enquiries.quote');
         Route::post('enquiries/{enquiry}/convert', [EnquiryInboxController::class, 'convert'])->name('enquiries.convert');
 
-        Route::get('quotes', [QuoteController::class, 'index'])->name('quotes');
-        Route::get('quotes/create', [QuoteController::class, 'create'])->name('quotes.create');
-        Route::post('quotes', [QuoteController::class, 'store'])->name('quotes.store');
-        Route::get('quotes/{quote}', [QuoteController::class, 'show'])->name('quotes.show');
-        Route::get('quotes/{quote}/print', [QuoteController::class, 'print'])->name('quotes.print');
-        Route::patch('quotes/{quote}', [QuoteController::class, 'update'])->name('quotes.update');
-        Route::delete('quotes/{quote}', [QuoteController::class, 'destroy'])->name('quotes.destroy');
-        Route::post('quotes/{quote}/lines', [QuoteController::class, 'storeLine'])->name('quotes.lines.store');
-        Route::delete('quotes/lines/{line}', [QuoteController::class, 'destroyLine'])->name('quotes.lines.destroy');
-        Route::post('quotes/{quote}/send', [QuoteController::class, 'send'])->name('quotes.send');
-        Route::post('quotes/{quote}/accept', [QuoteController::class, 'accept'])->name('quotes.accept');
-        Route::post('quotes/{quote}/decline', [QuoteController::class, 'decline'])->name('quotes.decline');
+        // Quotes are prices: sales, finance, management and the owner only.
+        Route::middleware('can:handle-quotes')->group(function (): void {
+            Route::post('enquiries/{enquiry}/quote', [EnquiryInboxController::class, 'quote'])->name('enquiries.quote');
+
+            Route::get('quotes', [QuoteController::class, 'index'])->name('quotes');
+            Route::get('quotes/create', [QuoteController::class, 'create'])->name('quotes.create');
+            Route::post('quotes', [QuoteController::class, 'store'])->name('quotes.store');
+            Route::get('quotes/{quote}', [QuoteController::class, 'show'])->name('quotes.show');
+            Route::get('quotes/{quote}/print', [QuoteController::class, 'print'])->name('quotes.print');
+            Route::patch('quotes/{quote}', [QuoteController::class, 'update'])->name('quotes.update');
+            Route::delete('quotes/{quote}', [QuoteController::class, 'destroy'])->name('quotes.destroy');
+            Route::post('quotes/{quote}/lines', [QuoteController::class, 'storeLine'])->name('quotes.lines.store');
+            Route::delete('quotes/lines/{line}', [QuoteController::class, 'destroyLine'])->name('quotes.lines.destroy');
+            Route::post('quotes/{quote}/send', [QuoteController::class, 'send'])->name('quotes.send');
+            Route::post('quotes/{quote}/accept', [QuoteController::class, 'accept'])->name('quotes.accept');
+            Route::post('quotes/{quote}/decline', [QuoteController::class, 'decline'])->name('quotes.decline');
+        });
 
         Route::get('orders', [OrderController::class, 'index'])->name('orders');
         Route::get('orders/create', [OrderController::class, 'create'])->name('orders.create');
         Route::post('orders', [OrderController::class, 'store'])->name('orders.store');
         Route::get('orders/{order}', [OrderController::class, 'show'])->name('orders.show');
-        Route::get('orders/{order}/invoice', [OrderController::class, 'invoice'])->name('orders.invoice');
         Route::patch('orders/{order}', [OrderController::class, 'update'])->name('orders.update');
         Route::delete('orders/{order}', [OrderController::class, 'destroy'])->name('orders.destroy');
-        Route::post('orders/{order}/items', [OrderController::class, 'storeItem'])->name('orders.items.store');
-        Route::delete('orders/items/{item}', [OrderController::class, 'destroyItem'])->name('orders.items.destroy');
         Route::post('orders/{order}/dishes', [OrderController::class, 'storeDish'])->name('orders.dishes.store');
         Route::delete('orders/dishes/{orderDish}', [OrderController::class, 'destroyDish'])->name('orders.dishes.destroy');
         Route::post('orders/{order}/deduct', [OrderController::class, 'deductIngredients'])->name('orders.deduct');
         Route::post('orders/{order}/tasks', [OrderController::class, 'storeTask'])->name('orders.tasks.store');
         Route::post('orders/{order}/tasks/standard', [OrderController::class, 'seedTasks'])->name('orders.tasks.standard');
-        Route::post('orders/{order}/payments', [OrderPaymentController::class, 'store'])->name('orders.payments.store');
-        Route::delete('payments/{payment}', [OrderPaymentController::class, 'destroy'])->name('payments.destroy');
+
+        // Money on a job: management and the owner, checked here as well as in the page.
+        Route::middleware('can:see-financials')->group(function (): void {
+            Route::get('orders/{order}/invoice', [OrderController::class, 'invoice'])->name('orders.invoice');
+            Route::post('orders/{order}/items', [OrderController::class, 'storeItem'])->name('orders.items.store');
+            Route::delete('orders/items/{item}', [OrderController::class, 'destroyItem'])->name('orders.items.destroy');
+            Route::post('orders/{order}/payments', [OrderPaymentController::class, 'store'])->name('orders.payments.store');
+            Route::delete('payments/{payment}', [OrderPaymentController::class, 'destroy'])->name('payments.destroy');
+        });
     });
 
     /* ---------------------------------------------------------- kitchen */
@@ -238,6 +253,11 @@ Route::middleware(['auth'])->prefix('dashboard')->group(function (): void {
         Route::post('timesheets/approve', [TimesheetController::class, 'approve'])->name('timesheets.approve');
 
         Route::get('activity', [ActivityController::class, 'index'])->name('activity');
+
+        Route::get('logins', [UserController::class, 'index'])->name('users');
+        Route::post('logins', [UserController::class, 'store'])->name('users.store');
+        Route::patch('logins/{user}', [UserController::class, 'update'])->name('users.update');
+        Route::post('logins/{user}/password', [UserController::class, 'resetPassword'])->name('users.password');
     });
 
     /* --------------------------------------------------------- settings */

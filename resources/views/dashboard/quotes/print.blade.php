@@ -97,6 +97,12 @@
                     <span>{{ __('Total') }}</span>
                     <span class="tabular-nums">£{{ number_format($quote->total / 100, 2) }}</span>
                 </div>
+                @if ($vat = vat_breakdown($quote->total))
+                    <div class="flex justify-between text-text-muted">
+                        <span>{{ __('Of which VAT at :rate%', ['rate' => $vat['rate']]) }}</span>
+                        <span class="tabular-nums">{{ money($vat['vat']) }}</span>
+                    </div>
+                @endif
             </div>
 
             @if ($quote->terms)

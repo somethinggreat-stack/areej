@@ -22,7 +22,13 @@ class Role extends Model
 
     public const MANAGEMENT = 'management';
 
+    public const FINANCE = 'finance';
+
     public const MANAGER = 'manager';
+
+    public const PURCHASING = 'purchasing';
+
+    public const SALES = 'sales';
 
     public const STAFF = 'staff';
 

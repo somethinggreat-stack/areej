@@ -31,7 +31,7 @@ class TimesheetController extends Controller
             'week' => $week,
             'payRun' => $payRun,
             'totals' => $this->timesheet->payRunTotals($payRun),
-            'overtimeAfter' => Timesheet::OVERTIME_AFTER_HOURS,
+            'overtimeAfter' => $this->timesheet->overtimeAfterHours(),
             'unapproved' => AttendanceRecord::whereBetween('worked_on', [$week, $week->addDays(6)])
                 ->where('status', 'closed')
                 ->count(),

@@ -1,6 +1,6 @@
 @php
     $user = auth()->user();
-    $alerts = app(\App\Services\OperationsFeed::class)->alertCount();
+    $alerts = app(\App\Services\OperationsFeed::class)->alertCount($user);
 @endphp
 
 <header class="sticky top-0 z-30 border-b border-line bg-surface/90 backdrop-blur">
@@ -54,7 +54,19 @@
                         <span class="block truncate text-sm font-semibold text-text">{{ $user?->name }}</span>
                         <span class="block truncate text-xs text-text-muted">{{ $user?->role?->name_en ?? __('No role') }}</span>
                     </p>
-                    <form method="POST" action="{{ route('logout') }}" class="border-t border-line pt-1.5">
+                    <a href="{{ route('account') }}"
+                       class="tap flex items-center gap-2 rounded-lg px-3 text-sm font-medium text-text transition-colors hover:bg-surface-2">
+                        <x-icon name="key" class="size-4 text-text-faint" />
+                        {{ __('Password and security') }}
+                    </a>
+                    @if ($user?->staffProfile)
+                        <a href="{{ route('my-timesheet') }}"
+                           class="tap flex items-center gap-2 rounded-lg px-3 text-sm font-medium text-text transition-colors hover:bg-surface-2">
+                            <x-icon name="clock" class="size-4 text-text-faint" />
+                            {{ __('My timesheet') }}
+                        </a>
+                    @endif
+                    <form method="POST" action="{{ route('logout') }}" class="mt-1.5 border-t border-line pt-1.5">
                         @csrf
                         <button type="submit" class="tap w-full rounded-lg px-3 text-start text-sm font-medium text-text transition-colors hover:bg-surface-2">
                             {{ __('Sign out') }}

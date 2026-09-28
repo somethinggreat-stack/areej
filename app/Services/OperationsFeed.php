@@ -11,6 +11,8 @@ use App\Models\Order;
 use App\Models\OrderTask;
 use App\Models\PurchaseOrder;
 use App\Models\Quote;
+use App\Models\Setting;
+use App\Models\User;
 use App\Models\WasteLog;
 use Illuminate\Support\Collection;
 
@@ -52,17 +54,24 @@ class OperationsFeed
     /**
      * Things that need a human. Ordered by how much they cost to ignore.
      *
+     * Each alert is only worked out for someone who can open the screen that
+     * resolves it, so nobody is shown a number they cannot act on — or money
+     * they are not meant to see.
+     *
      * @return Collection<int, array{
      *     tone: string, icon: string, title: string, detail: string, href: string, count: int
      * }>
      */
-    public function alerts(): Collection
+    public function alerts(User $user): Collection
     {
         $alerts = [];
+        $can = fn (int $level): bool => $user->is_active && $user->hasRoleLevel($level);
 
         /* --- money already earned but not collected ---------------------- */
-        $owed = Order::owing()->with('payments')->get()
-            ->filter(fn (Order $o) => $o->balanceAmount() > 0 && $o->event_date->isPast());
+        $owed = $user->canSeeFinancials()
+            ? Order::owing()->with('payments')->get()
+                ->filter(fn (Order $o) => $o->balanceAmount() > 0 && $o->event_date->isPast())
+            : collect();
 
         if ($owed->isNotEmpty()) {
             $alerts[] = [
@@ -79,7 +88,7 @@ class OperationsFeed
         }
 
         /* --- stock that will stop a job ---------------------------------- */
-        $low = InventoryItem::needsReorder()->count();
+        $low = $can(40) ? InventoryItem::needsReorder()->count() : 0;
 
         if ($low > 0) {
             $alerts[] = [
@@ -93,7 +102,7 @@ class OperationsFeed
         }
 
         /* --- enquiries nobody has answered ------------------------------- */
-        $newEnquiries = Enquiry::where('status', 'new')->count();
+        $newEnquiries = $can(30) ? Enquiry::where('status', 'new')->count() : 0;
 
         if ($newEnquiries > 0) {
             $alerts[] = [
@@ -107,23 +116,24 @@ class OperationsFeed
         }
 
         /* --- quotes sent and gone quiet ---------------------------------- */
-        $stale = Quote::awaitingReply()
-            ->where('sent_at', '<=', now()->subDays(3))
-            ->count();
+        $chaseAfter = (int) Setting::get('chase_quote_after_days', 3);
+        $stale = $user->is_active && $user->canHandleQuotes()
+            ? Quote::awaitingReply()->where('sent_at', '<=', now()->subDays($chaseAfter))->count()
+            : 0;
 
         if ($stale > 0) {
             $alerts[] = [
                 'tone' => 'warn',
                 'icon' => 'file-text',
                 'title' => __('Quotes with no reply'),
-                'detail' => trans_choice('{1}1 sent over 3 days ago|[2,*]:count sent over 3 days ago', $stale, ['count' => $stale]),
+                'detail' => trans_choice('{1}1 sent over :days days ago|[2,*]:count sent over :days days ago', $stale, ['count' => $stale, 'days' => $chaseAfter]),
                 'href' => route('quotes', ['status' => 'sent']),
                 'count' => $stale,
             ];
         }
 
         /* --- deliveries that should have arrived ------------------------- */
-        $latePo = PurchaseOrder::outstanding()
+        $latePo = ! $can(40) ? 0 : PurchaseOrder::outstanding()
             ->whereNotNull('expected_on')
             ->whereDate('expected_on', '<', today())
             ->count();
@@ -140,7 +150,7 @@ class OperationsFeed
         }
 
         /* --- prep that has slipped --------------------------------------- */
-        $overdueTasks = OrderTask::outstanding()
+        $overdueTasks = ! $can(50) ? 0 : OrderTask::outstanding()
             ->whereHas('order', fn ($q) => $q->whereDate('event_date', '>=', today()->subDays(1))
                 ->whereNotIn('status', ['cancelled', 'completed']))
             ->get()
@@ -159,7 +169,7 @@ class OperationsFeed
         }
 
         /* --- people still clocked in from a previous day ------------------ */
-        $stillIn = AttendanceRecord::open()->whereDate('worked_on', '<', today())->count();
+        $stillIn = $can(80) ? AttendanceRecord::open()->whereDate('worked_on', '<', today())->count() : 0;
 
         if ($stillIn > 0) {
             $alerts[] = [
@@ -173,7 +183,7 @@ class OperationsFeed
         }
 
         /* --- kit that never came back ------------------------------------ */
-        $kitOut = EquipmentAssignment::stillOut()
+        $kitOut = ! $can(50) ? 0 : EquipmentAssignment::stillOut()
             ->whereHas('order', fn ($q) => $q->whereDate('event_date', '<', today()->subDay()))
             ->count();
 
@@ -191,11 +201,11 @@ class OperationsFeed
         return collect($alerts);
     }
 
-    public function alertCount(): int
+    public function alertCount(User $user): int
     {
         // Cheap enough to run per request, and always current — a stale badge
         // is worse than none.
-        return $this->alerts()->count();
+        return $this->alerts($user)->count();
     }
 
     /**

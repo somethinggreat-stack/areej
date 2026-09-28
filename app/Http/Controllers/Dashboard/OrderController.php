@@ -311,8 +311,16 @@ class OrderController extends Controller
             'notes' => ['nullable', 'string', 'max:5000'],
         ]);
 
-        $data['total_amount'] = (int) round((float) ($data['total_amount'] ?? 0) * 100);
-        $data['deposit_due'] = (int) round((float) ($data['deposit_due'] ?? 0) * 100);
+        // The price fields are only on the form for management and the owner.
+        // For anyone else they are left out entirely, so saving a job's details
+        // can never wipe a price they were not shown.
+        if ($request->user()->canSeeFinancials()) {
+            $data['total_amount'] = (int) round((float) ($data['total_amount'] ?? 0) * 100);
+            $data['deposit_due'] = (int) round((float) ($data['deposit_due'] ?? 0) * 100);
+        } else {
+            unset($data['total_amount'], $data['deposit_due']);
+        }
+
         $data['guests'] ??= 0;
         $data['staff_required'] ??= 0;
 

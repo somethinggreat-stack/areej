@@ -1,65 +1,48 @@
-<!DOCTYPE html>
-<html lang="{{ app()->getLocale() }}" dir="{{ app()->getLocale() === 'ur' ? 'rtl' : 'ltr' }}">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-    <meta name="robots" content="noindex, nofollow">
-    <title>{{ __('Sign in') }} — Midland Catering</title>
-    @vite(['resources/css/app.css'])
-</head>
-<body class="grid min-h-svh place-items-center bg-navy px-4 py-10">
-    <div class="w-full max-w-sm">
-        <div class="mb-8 text-center">
-            <span class="mx-auto grid size-14 place-items-center rounded-full bg-gold text-lg font-bold text-ink">MC</span>
-            <h1 class="mt-5 text-xl font-semibold text-cream">Midland Catering</h1>
-            <p class="label-sm mt-1 !text-cream/45">{{ __('Operations Dashboard') }}</p>
+@extends('auth.layout')
+
+@section('title', __('Sign in'))
+
+@section('card')
+    <form method="POST" action="{{ route('login') }}" class="space-y-4">
+        @csrf
+
+        <div>
+            <label for="email" class="label-sm">{{ __('Email') }}</label>
+            <input id="email" name="email" type="email" value="{{ old('email') }}"
+                   required autofocus autocomplete="username webauthn" inputmode="email"
+                   class="tap mt-1.5 w-full rounded-lg border border-line-strong px-3 py-2.5 text-sm outline-none transition-colors focus:border-royal">
         </div>
 
-        <div class="card p-6">
-            @if ($errors->any())
-                <div role="alert" class="mb-5 rounded-lg border border-bad/30 bg-bad-bg px-4 py-3 text-sm text-bad">
-                    {{ $errors->first() }}
-                </div>
-            @endif
-
-            <form method="POST" action="{{ route('login') }}" class="space-y-4">
-                @csrf
-
-                <div>
-                    <label for="email" class="label-sm">{{ __('Email') }}</label>
-                    <input id="email" name="email" type="email" value="{{ old('email') }}"
-                           required autofocus autocomplete="username" inputmode="email"
-                           class="tap mt-1.5 w-full rounded-lg border border-line-strong px-3 py-2.5 text-sm outline-none transition-colors focus:border-royal">
-                </div>
-
-                <div>
-                    <label for="password" class="label-sm">{{ __('Password') }}</label>
-                    <input id="password" name="password" type="password"
-                           required autocomplete="current-password"
-                           class="tap mt-1.5 w-full rounded-lg border border-line-strong px-3 py-2.5 text-sm outline-none transition-colors focus:border-royal">
-                </div>
-
-                <label class="flex items-center gap-2.5 text-sm text-text-muted">
-                    <input type="checkbox" name="remember" class="size-4 rounded border-line-strong">
-                    {{ __('Keep me signed in') }}
-                </label>
-
-                <button type="submit"
-                        class="tap w-full rounded-lg bg-navy px-4 text-sm font-semibold text-cream transition-colors hover:bg-royal-deep">
-                    {{ __('Sign in') }}
-                </button>
-            </form>
+        <div>
+            <div class="flex items-baseline justify-between gap-3">
+                <label for="password" class="label-sm">{{ __('Password') }}</label>
+                <a href="{{ route('password.request') }}" class="text-xs font-semibold text-link hover:underline">{{ __('Forgot password?') }}</a>
+            </div>
+            <input id="password" name="password" type="password"
+                   required autocomplete="current-password"
+                   class="tap mt-1.5 w-full rounded-lg border border-line-strong px-3 py-2.5 text-sm outline-none transition-colors focus:border-royal">
         </div>
 
-        <div class="mt-6 flex justify-center gap-2">
-            @foreach (['en' => 'English', 'ur' => 'اردو'] as $code => $label)
-                <a href="{{ route('locale.switch', $code) }}"
-                   class="rounded-md px-3 py-1.5 text-xs font-semibold transition-colors
-                          {{ app()->getLocale() === $code ? 'bg-cream/15 text-cream' : 'text-cream/50 hover:text-cream' }}">
-                    {{ $label }}
-                </a>
-            @endforeach
+        <label class="flex items-center gap-2.5 text-sm text-text-muted">
+            <input type="checkbox" name="remember" data-passkey-remember class="size-4 rounded border-line-strong">
+            {{ __('Keep me signed in') }}
+        </label>
+
+        <button type="submit"
+                class="tap w-full rounded-lg bg-navy px-4 text-sm font-semibold text-cream transition-colors hover:bg-royal-deep">
+            {{ __('Sign in') }}
+        </button>
+    </form>
+
+    {{-- Shown by passkeys.js only in browsers that support passkeys --}}
+    <div data-passkey-login-wrap class="hidden">
+        <div class="my-5 flex items-center gap-3 text-xs text-text-faint">
+            <span class="h-px flex-1 bg-line"></span>{{ __('or') }}<span class="h-px flex-1 bg-line"></span>
         </div>
+        <button type="button" data-passkey-login
+                data-options-url="{{ route('passkey.login-options') }}" data-verify-url="{{ route('passkey.login') }}"
+                class="tap w-full rounded-lg border border-line-strong px-4 text-sm font-semibold text-text transition-colors hover:bg-surface-2">
+            {{ __('Sign in with a passkey') }}
+        </button>
     </div>
-</body>
-</html>
+@endsection

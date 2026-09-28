@@ -84,7 +84,7 @@
     "src": "_inter-700-normal-Yt3aPRUw.woff2"
   },
   "resources/css/app.css": {
-    "file": "assets/app-CeYwt2O2.css",
+    "file": "assets/app-CJVmgSl8.css",
     "name": "app",
     "names": [
       "app.css"
@@ -93,7 +93,7 @@
     "isEntry": true
   },
   "resources/css/site.css": {
-    "file": "assets/site-DCJ5bNVL.css",
+    "file": "assets/site-iQ1e8BJr.css",
     "name": "site",
     "names": [
       "site.css"
@@ -105,6 +105,12 @@
     "file": "assets/app-C1aPjCs6.js",
     "name": "app",
     "src": "resources/js/app.js",
+    "isEntry": true
+  },
+  "resources/js/passkeys.js": {
+    "file": "assets/passkeys-CsrObOxx.js",
+    "name": "passkeys",
+    "src": "resources/js/passkeys.js",
     "isEntry": true
   },
   "resources/js/site.js": {

@@ -101,8 +101,13 @@ class AttendanceRecord extends Model
         return $late > 0 ? (int) $late : 0;
     }
 
-    public function isLate(int $graceMinutes = 5): bool
+    /**
+     * Late past the owner's grace period (Settings → Lateness grace).
+     */
+    public function isLate(?int $graceMinutes = null): bool
     {
+        $graceMinutes ??= (int) Setting::get('late_grace_minutes', 5);
+
         return ($this->minutesLate() ?? 0) > $graceMinutes;
     }
 

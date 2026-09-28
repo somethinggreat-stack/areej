@@ -27,6 +27,8 @@ class QuoteController extends Controller
 
     public function index(Request $request): View
     {
+        Quote::expireOverdue();
+
         $status = $request->string('status')->toString();
 
         $quotes = Quote::query()
@@ -53,6 +55,7 @@ class QuoteController extends Controller
                 'sent' => Quote::where('status', 'sent')->count(),
                 'accepted' => Quote::where('status', 'accepted')->count(),
                 'declined' => Quote::where('status', 'declined')->count(),
+                'expired' => Quote::where('status', 'expired')->count(),
             ],
             'openValue' => (int) $open->sum('total'),
             'acceptedThisMonth' => Quote::where('status', 'accepted')
@@ -109,6 +112,9 @@ class QuoteController extends Controller
 
     public function show(Quote $quote): View
     {
+        Quote::expireOverdue();
+        $quote->refresh();
+
         return view('dashboard.quotes.show', [
             'quote' => $quote->load(['lines.dish', 'creator', 'enquiry', 'order']),
             'dishes' => Dish::active()->inMenuOrder()->get(),
@@ -265,6 +271,18 @@ class QuoteController extends Controller
                         ['guests' => (int) round((float) $line->quantity)]
                     );
                 }
+            }
+
+            // The discount travels as a line of its own, so the job's lines add
+            // up to the price agreed and adding a line later keeps it.
+            if ($quote->discountAmount() > 0) {
+                $order->items()->create([
+                    'description' => __('Discount (:n%)', ['n' => $quote->discount_percent]),
+                    'quantity' => 1,
+                    'unit_price' => -$quote->discountAmount(),
+                    'line_total' => -$quote->discountAmount(),
+                    'position' => (int) $quote->lines->max('position') + 1,
+                ]);
             }
 
             $quote->update([

@@ -93,6 +93,11 @@
                         <span>{{ __('Total') }}</span>
                         <x-money :pence="$quote->total" />
                     </div>
+                    @if ($vat = vat_breakdown($quote->total))
+                        <p class="text-end text-xs text-text-faint">
+                            {{ __('Includes VAT at :rate%: :vat', ['rate' => $vat['rate'], 'vat' => money($vat['vat'])]) }}
+                        </p>
+                    @endif
                     @if ($quote->guests > 0)
                         <p class="pt-1 text-end text-xs text-text-faint">
                             {{ __('£:n per head', ['n' => number_format($quote->perHeadInPounds(), 2)]) }}

@@ -27,6 +27,7 @@
         'sent' => __('Awaiting reply').' ('.$counts['sent'].')',
         'accepted' => __('Accepted').' ('.$counts['accepted'].')',
         'declined' => __('Declined').' ('.$counts['declined'].')',
+        'expired' => __('Expired').' ('.$counts['expired'].')',
     ]" />
 
     @if ($quotes->isEmpty())

@@ -98,6 +98,10 @@ class StaffController extends Controller
         $staffProfile->update(['is_active' => false]);
         $staffProfile->delete();
 
+        // Someone who has left should not keep a way in: their login goes off
+        // too, and the next page they open signs them out.
+        $staffProfile->user?->update(['is_active' => false]);
+
         $this->activity->deleted($staffProfile, __('Staff archived: :name', ['name' => $name]));
 
         return redirect()->route('staff')->with('status', __(':name archived. Their worked shifts are kept.', ['name' => $name]));

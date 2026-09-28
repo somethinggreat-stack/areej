@@ -115,6 +115,21 @@ class Quote extends Model
         return in_array($this->status, ['draft', 'sent'], true);
     }
 
+    /**
+     * Moves every sent quote whose "valid until" date has passed to Expired.
+     *
+     * Run lazily whenever quotes are looked at, and by the daily schedule when
+     * the host has cron, so it works on hosting with no background jobs.
+     */
+    public static function expireOverdue(): int
+    {
+        return static::query()
+            ->where('status', 'sent')
+            ->whereNotNull('valid_until')
+            ->whereDate('valid_until', '<', today())
+            ->update(['status' => 'expired', 'decided_at' => now()]);
+    }
+
     public function isExpired(): bool
     {
         return $this->status === 'sent'

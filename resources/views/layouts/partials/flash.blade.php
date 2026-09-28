@@ -1,6 +1,17 @@
 @php
+    // Fortify and the passkeys package flash short codes rather than sentences.
+    $fortifyMessages = [
+        'password-updated' => __('Password changed.'),
+        'two-factor-authentication-enabled' => __('Almost done: scan the code with your authenticator app, then enter the 6-digit code to switch it on.'),
+        'two-factor-authentication-confirmed' => __('Two-step sign in is on. Save your recovery codes somewhere safe.'),
+        'two-factor-authentication-disabled' => __('Two-step sign in is off.'),
+        'recovery-codes-generated' => __('New recovery codes made. The old ones no longer work.'),
+        'passkey-deleted' => __('Passkey removed.'),
+    ];
+    $status = session('status');
+
     $flashes = array_filter([
-        'good' => session('status'),
+        'good' => $fortifyMessages[$status] ?? $status,
         'bad' => session('error'),
         'warn' => session('warning'),
     ]);

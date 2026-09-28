@@ -38,7 +38,9 @@
         <x-empty icon="clipboard" :title="__('No jobs here')"
                  :body="__('Accepted quotes land here automatically. Orders taken by phone can be added by hand.')">
             <x-btn :href="route('orders.create')" icon="plus">{{ __('Take an order') }}</x-btn>
-            <x-btn variant="secondary" :href="route('quotes')">{{ __('See quotes') }}</x-btn>
+            @can('handle-quotes')
+                <x-btn variant="secondary" :href="route('quotes')">{{ __('See quotes') }}</x-btn>
+            @endcan
         </x-empty>
     @else
         <x-table :head="[__('Customer'), __('Date'), __('Guests'), __('Status'), $money ? __('Total') : '', $money ? __('Owed') : '', '']"

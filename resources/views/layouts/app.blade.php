@@ -31,7 +31,7 @@
         <link href="https://fonts.bunny.net/css?family=noto-nastaliq-urdu:400,600" rel="stylesheet">
     @endif
 
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
+    @vite(['resources/css/app.css', 'resources/js/app.js', 'resources/js/passkeys.js'])
     @livewireStyles
 </head>
 <body class="min-h-svh bg-app text-text">
