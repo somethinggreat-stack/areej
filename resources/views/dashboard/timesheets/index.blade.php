@@ -4,6 +4,8 @@
 @section('subtitle', $week->format('j M') . ' – ' . $week->addDays(6)->format('j M Y'))
 
 @section('content')
+    @include('dashboard.partials.export-button', ['sheet' => 'wages'])
+
     <form method="GET" class="card mb-5 flex flex-wrap items-end gap-3 p-4">
         <x-field name="week" type="date" :label="__('Any day in the week')" :value="$week->toDateString()" />
         <x-btn variant="secondary" type="submit">{{ __('Show') }}</x-btn>

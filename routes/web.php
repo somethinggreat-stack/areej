@@ -270,6 +270,9 @@ Route::middleware(['auth', 'active'])->prefix('dashboard')->group(function (): v
         Route::get('excel/staff/export', [ExcelExportController::class, 'staff'])->name('excel.staff.export');
         Route::get('excel/shifts/export', [ExcelExportController::class, 'shifts'])->name('excel.shifts.export');
         Route::get('excel/stock/export', [ExcelExportController::class, 'stock'])->name('excel.stock.export');
+        Route::get('excel/wages/export', [ExcelExportController::class, 'wages'])->name('excel.wages.export');
+        Route::get('excel/shifts/template', [ExcelImportController::class, 'shiftsTemplate'])->name('excel.shifts.template');
+        Route::post('excel/shifts/import', [ExcelImportController::class, 'shifts'])->name('excel.shifts.import');
 
         Route::get('excel/staff/template', [ExcelImportController::class, 'staffTemplate'])->name('excel.staff.template');
         Route::get('excel/stock/template', [ExcelImportController::class, 'stockTemplate'])->name('excel.stock.template');

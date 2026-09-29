@@ -4,7 +4,7 @@
 @section('subtitle', $day->format('l j F Y'))
 
 @section('content')
-    @include('dashboard.partials.export-button', ['sheet' => 'shifts'])
+    @include('dashboard.partials.export-button', ['sheet' => 'shifts', 'import' => true])
     <form method="GET" class="card mb-5 flex flex-wrap items-end gap-3 p-4">
         <x-field name="day" type="date" :label="__('Day')" :value="$day->toDateString()" />
         <x-btn variant="secondary" type="submit">{{ __('Show') }}</x-btn>
@@ -26,12 +26,18 @@
     </div>
 
     {{-- The simple way: everyone's hours for the day in one grid, one Save. --}}
-    @if (! $day->isFuture())
+    @php $planning = $day->isFuture(); @endphp
         <details class="card mb-5 overflow-hidden" open>
             <summary class="tap flex cursor-pointer list-none items-center justify-between gap-3 px-5 py-4">
                 <span>
-                    <span class="block text-sm font-semibold text-text">{{ __('Quick shifts for :day', ['day' => $day->format('l j M')]) }}</span>
-                    <span class="block text-xs text-text-muted">{{ __('Type start and finish for whoever worked, leave the rest blank, then Save. A finish after midnight is fine.') }}</span>
+                    <span class="block text-sm font-semibold text-text">
+                        {{ $planning ? __('Plan the rota for :day', ['day' => $day->format('l j M')]) : __('Quick shifts for :day', ['day' => $day->format('l j M')]) }}
+                    </span>
+                    <span class="block text-xs text-text-muted">
+                        {{ $planning
+                            ? __('Type the planned start and finish for whoever is working, leave the rest blank, then Save. They can be clocked in on the day.')
+                            : __('Type start and finish for whoever worked, leave the rest blank, then Save. A finish after midnight is fine.') }}
+                    </span>
                 </span>
                 <x-icon name="clock" class="size-4 shrink-0 text-text-faint" />
             </summary>
@@ -70,7 +76,8 @@
                                     <td class="px-4 py-2 text-xs text-text-muted">
                                         @foreach ($existing as $shift)
                                             <span class="block">
-                                                {{ $shift->clock_in_at?->format('H:i') ?? '—' }}–{{ $shift->clock_out_at?->format('H:i') ?? '…' }}
+                                                {{ ($shift->clock_in_at ?? $shift->scheduled_start_at)?->format('H:i') ?? '—' }}–{{ ($shift->clock_out_at ?? $shift->scheduled_end_at)?->format('H:i') ?? '…' }}
+                                                @if ($shift->status === 'scheduled') · {{ __('planned') }} @endif
                                                 @if ($shift->clock_out_at) · {{ number_format($shift->paidHours(), 2) }} {{ __('hrs') }} @endif
                                             </span>
                                         @endforeach
@@ -81,11 +88,10 @@
                     </table>
                 </div>
                 <div class="flex justify-end border-t border-line bg-surface-2 px-5 py-3">
-                    <x-btn type="submit">{{ __('Save shifts') }}</x-btn>
+                    <x-btn type="submit">{{ $planning ? __('Save the rota') : __('Save shifts') }}</x-btn>
                 </div>
             </form>
         </details>
-    @endif
 
     @if ($stillOpen->isNotEmpty() && ! $day->isToday())
         <div class="card mb-5 border-warn/30 bg-warn-bg p-4">

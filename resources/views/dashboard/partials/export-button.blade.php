@@ -13,6 +13,7 @@
     $ranged = [
         'shifts' => [route('excel.shifts.export'), now()->startOfWeek(\Carbon\Carbon::MONDAY), __('Export shifts to Excel')],
         'orders' => [route('reports.export', 'jobs'), now()->startOfMonth(), __('Export orders to Excel')],
+        'wages' => [route('excel.wages.export'), now()->startOfMonth(), __('Export wages paid to Excel')],
     ];
 @endphp
 
@@ -27,6 +28,12 @@
             <x-btn variant="secondary" type="submit" icon="download">{{ $buttonLabel }}</x-btn>
             <p class="text-xs text-text-faint">{{ __('Opens in Excel.') }}</p>
         </form>
+
+        @if ($import)
+            <div class="mb-5">
+                @include('dashboard.partials.import-card', ['sheet' => $sheet])
+            </div>
+        @endif
     @else
         <div class="mb-5 space-y-3">
             <div class="flex flex-wrap items-center gap-2">

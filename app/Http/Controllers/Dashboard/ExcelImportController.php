@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Dashboard;
 
 use App\Http\Controllers\Controller;
+use App\Models\AttendanceRecord;
 use App\Models\InventoryCategory;
 use App\Models\InventoryItem;
 use App\Models\StaffProfile;
@@ -11,9 +12,11 @@ use App\Models\Supplier;
 use App\Services\Activity;
 use App\Services\CsvFile;
 use App\Services\StockLedger;
+use Carbon\CarbonImmutable;
 use DateTimeImmutable;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use InvalidArgumentException;
@@ -67,6 +70,37 @@ class ExcelImportController extends Controller
         return $this->csv->download('midland-stock-template.csv', ExcelExportController::STOCK_COLUMNS, []);
     }
 
+    public function shiftsTemplate(): StreamedResponse
+    {
+        return $this->csv->download('midland-shifts-template.csv', ExcelExportController::SHIFT_IMPORT_COLUMNS, []);
+    }
+
+    /**
+     * Hours from a sheet: one row per person per shift. A past or today's row
+     * with start and finish is saved as worked; a future row is put on the rota.
+     */
+    public function shifts(Request $request): RedirectResponse
+    {
+        $sheet = $this->readUpload($request);
+
+        foreach (['date' => 'Date', 'name' => 'Name'] as $header => $label) {
+            if (! in_array($header, $sheet['headers'], true)) {
+                return $this->missingHeader($label);
+            }
+        }
+
+        $staff = StaffProfile::all()->keyBy(fn (StaffProfile $s) => CsvFile::normalise($s->full_name));
+
+        $result = DB::transaction(fn (): array => $this->importRows($sheet['rows'], fn (array $row) => $this->importShiftRow($row, $staff, $request)));
+
+        $this->activity->log('imported', __('Shifts imported from Excel: :summary', ['summary' => $this->summary($result)]), null, [
+            'added' => $result['added'],
+            'skipped' => count($result['skipped']),
+        ]);
+
+        return $this->finish('shifts', $result);
+    }
+
     public function staff(Request $request): RedirectResponse
     {
         $sheet = $this->readUpload($request);
@@ -103,6 +137,98 @@ class ExcelImportController extends Controller
         ]);
 
         return $this->finish('stock', $result);
+    }
+
+    /* ----------------------------------------------------------- shifts */
+
+    /**
+     * @param  array<string, string>  $row
+     * @param  Collection<string, StaffProfile>  $staff
+     * @return 'added'
+     */
+    private function importShiftRow(array $row, Collection $staff, Request $request): string
+    {
+        $name = (string) $this->cell($row, ['name', 'full name']);
+        $person = $staff->get(CsvFile::normalise($name));
+
+        if ($person === null) {
+            throw new InvalidArgumentException($name === ''
+                ? __('Name is empty.')
+                : __('":name" is not on the Staff page. Add them there first, or check the spelling.', ['name' => $name]));
+        }
+
+        $day = CarbonImmutable::parse($this->date((string) $this->cell($row, ['date']), 'Date'));
+        $start = $this->cell($row, ['start', 'clock in', 'rostered start']);
+        $finish = $this->cell($row, ['finish', 'end', 'clock out']);
+
+        if ($start === null || $start === '') {
+            throw new InvalidArgumentException(__('Start time is empty.'));
+        }
+
+        $in = $day->setTimeFromTimeString($this->time($start, 'Start'));
+        $out = $finish === null || $finish === '' ? null : $day->setTimeFromTimeString($this->time($finish, 'Finish'));
+
+        if ($out !== null && $out->lessThanOrEqualTo($in)) {
+            $out = $out->addDay();
+        }
+
+        $break = $this->cell($row, ['break minutes', 'break']);
+        $break = $break === null || $break === '' ? 0 : (int) $this->number($break, 'Break minutes');
+
+        if ($break < 0 || $break > 480) {
+            throw new InvalidArgumentException(__('Break minutes should be between 0 and 480.'));
+        }
+
+        $worked = ! $day->isFuture();
+
+        if ($worked && $out === null) {
+            throw new InvalidArgumentException(__('Finish time is empty — a worked shift needs both times.'));
+        }
+
+        $duplicate = AttendanceRecord::where('staff_profile_id', $person->id)
+            ->whereDate('worked_on', $day)
+            ->where($worked ? 'clock_in_at' : 'scheduled_start_at', $in)
+            ->exists();
+
+        if ($duplicate) {
+            throw new InvalidArgumentException(__(':name already has a shift starting :time on this day.', ['name' => $person->full_name, 'time' => $in->format('H:i')]));
+        }
+
+        AttendanceRecord::create([
+            'staff_profile_id' => $person->id,
+            'worked_on' => $day->toDateString(),
+            'scheduled_start_at' => $worked ? null : $in,
+            'scheduled_end_at' => $worked ? null : $out,
+            'clock_in_at' => $worked ? $in : null,
+            'clock_out_at' => $worked ? $out : null,
+            'break_minutes' => $break,
+            'method' => $worked ? 'manual' : 'roster',
+            'status' => $worked ? 'closed' : 'scheduled',
+            'hourly_rate' => $person->hourly_rate,
+            'overtime_rate' => $person->overtime_rate,
+            'recorded_by' => $request->user()->id,
+            'notes' => __('Imported from Excel'),
+        ]);
+
+        return 'added';
+    }
+
+    /**
+     * Times as people type them: 9:00, 09:00, 17.30, 9am, 5:30 PM.
+     */
+    private function time(string $value, string $column): string
+    {
+        $clean = strtoupper(str_replace([' ', '.'], ['', ':'], trim($value)));
+
+        foreach (['H:i', 'G:i', 'H:i:s', 'g:iA', 'gA', 'h:iA'] as $format) {
+            $time = DateTimeImmutable::createFromFormat('!'.$format, $clean);
+
+            if ($time !== false) {
+                return $time->format('H:i');
+            }
+        }
+
+        throw new InvalidArgumentException(__(':column ":value" is not a time. Write it like 09:00 or 17:30.', ['column' => $column, 'value' => $value]));
     }
 
     /* ------------------------------------------------------------ staff */

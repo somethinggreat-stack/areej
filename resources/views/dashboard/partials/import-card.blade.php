@@ -18,9 +18,11 @@
             <li>{{ __('Add or change rows. Keep the first row (the headings) as it is.') }}</li>
             <li>{{ __('In Excel use File → Save As and choose "CSV UTF-8".') }}</li>
             <li>{{ __('Upload the file here.') }}
-                {{ $sheet === 'staff'
-                    ? __('People are matched by full name: a new name is added, an existing one is updated.')
-                    : __('Items are matched by English name: a new name is added, an existing one is updated.') }}
+                {{ match ($sheet) {
+                    'staff' => __('People are matched by full name: a new name is added, an existing one is updated.'),
+                    'shifts' => __('One row per shift: Date, Name, Start, Finish, Break minutes. Names must match the Staff page. Past days are saved as worked hours; future days go on the rota. A shift already recorded is skipped.'),
+                    default => __('Items are matched by English name: a new name is added, an existing one is updated.'),
+                } }}
             </li>
             @if ($sheet === 'stock')
                 <li class="font-semibold text-warn">{{ __('Quantities are only set for new items — use a stock count to correct existing ones.') }}</li>

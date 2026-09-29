@@ -174,7 +174,7 @@ class AttendanceController extends Controller
     public function storeQuick(Request $request): RedirectResponse
     {
         $data = $request->validate([
-            'worked_on' => ['required', 'date', 'before_or_equal:today'],
+            'worked_on' => ['required', 'date'],
             'shifts' => ['required', 'array'],
             'shifts.*.start' => ['nullable', 'date_format:H:i'],
             'shifts.*.end' => ['nullable', 'date_format:H:i'],
@@ -190,7 +190,11 @@ class AttendanceController extends Controller
 
         $staff = StaffProfile::whereIn('id', $filled->keys())->get()->keyBy('id');
 
-        DB::transaction(function () use ($filled, $staff, $day, $request): void {
+        // Today or earlier = hours worked, ready for the pay run. A future day
+        // = the rota: planned times to clock in against on the day.
+        $worked = ! $day->isFuture();
+
+        DB::transaction(function () use ($filled, $staff, $day, $request, $worked): void {
             foreach ($filled as $staffId => $row) {
                 $person = $staff->get($staffId);
 
@@ -208,11 +212,13 @@ class AttendanceController extends Controller
                 AttendanceRecord::create([
                     'staff_profile_id' => $person->id,
                     'worked_on' => $day->toDateString(),
-                    'clock_in_at' => $in,
-                    'clock_out_at' => $out,
+                    'scheduled_start_at' => $worked ? null : $in,
+                    'scheduled_end_at' => $worked ? null : $out,
+                    'clock_in_at' => $worked ? $in : null,
+                    'clock_out_at' => $worked ? $out : null,
                     'break_minutes' => (int) ($row['break'] ?? 0),
-                    'method' => 'manual',
-                    'status' => 'closed',
+                    'method' => $worked ? 'manual' : 'roster',
+                    'status' => $worked ? 'closed' : 'scheduled',
                     'hourly_rate' => $person->hourly_rate,
                     'overtime_rate' => $person->overtime_rate,
                     'recorded_by' => $request->user()->id,
@@ -220,7 +226,9 @@ class AttendanceController extends Controller
             }
         });
 
-        return back()->with('status', trans_choice('{1}1 shift saved.|[2,*]:count shifts saved.', $filled->count(), ['count' => $filled->count()]));
+        return back()->with('status', $worked
+            ? trans_choice('{1}1 shift saved.|[2,*]:count shifts saved.', $filled->count(), ['count' => $filled->count()])
+            : trans_choice('{1}1 person put on the rota.|[2,*]:count people put on the rota.', $filled->count(), ['count' => $filled->count()]));
     }
 
     /**

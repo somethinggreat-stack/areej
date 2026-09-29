@@ -10,6 +10,7 @@ use App\Models\User;
 use App\Models\WagePayment;
 use Database\Seeders\RoleSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
 use Tests\TestCase;
 
 /**
@@ -120,6 +121,67 @@ class SimpleStaffAndWagesTest extends TestCase
             'week' => today()->toDateString(),
             'amount' => 50,
         ])->assertForbidden();
+    }
+
+    public function test_the_grid_on_a_future_day_plans_the_rota_instead_of_logging_hours(): void
+    {
+        $imran = $this->person();
+
+        $this->actingAs($this->manager)->post('/dashboard/attendance/quick', [
+            'worked_on' => today()->addDays(3)->toDateString(),
+            'shifts' => [$imran->id => ['start' => '10:00', 'end' => '18:00', 'break' => '']],
+        ])->assertSessionHasNoErrors();
+
+        $shift = AttendanceRecord::firstOrFail();
+        $this->assertSame('scheduled', $shift->status);
+        $this->assertSame('10:00', $shift->scheduled_start_at->format('H:i'));
+        $this->assertNull($shift->clock_in_at, 'Nothing is worked until they are clocked in on the day.');
+    }
+
+    public function test_wages_paid_export_to_excel(): void
+    {
+        $imran = $this->person();
+        WagePayment::create([
+            'staff_profile_id' => $imran->id,
+            'week_start' => now()->startOfWeek()->toDateString(),
+            'amount' => 9600,
+            'paid_on' => today()->toDateString(),
+            'method' => 'cash',
+        ]);
+
+        $response = $this->actingAs($this->manager)->get('/dashboard/excel/wages/export?from='.now()->startOfMonth()->subMonth()->toDateString().'&to='.now()->addMonth()->toDateString());
+        $response->assertOk();
+        $csv = $response->streamedContent();
+
+        $this->assertStringStartsWith("\xEF\xBB\xBF", $csv);
+        $this->assertStringContainsString('"Week starting",Name,Amount,"Paid by","Paid on",Notes', $csv);
+        $this->assertStringContainsString('"Imran Hussain",96.00,Cash', $csv);
+    }
+
+    public function test_shifts_import_from_excel_as_worked_hours_and_rota(): void
+    {
+        $this->person();
+        $past = today()->subDays(2)->format('d/m/Y');
+        $future = today()->addDays(2)->format('d/m/Y');
+
+        $csv = "Date,Name,Start,Finish,Break minutes\n"
+            ."{$past},imran hussain,9:00,17.30,30\n"
+            ."{$future},Imran Hussain,10am,6:00 PM,\n"
+            ."{$past},Nobody Here,9:00,17:00,0\n"
+            ."{$past},Imran Hussain,9:00,17:30,30\n";
+
+        $file = UploadedFile::fake()->createWithContent('shifts.csv', $csv);
+
+        $this->actingAs($this->manager)->post('/dashboard/excel/shifts/import', ['file' => $file])
+            ->assertSessionHas('status', '2 added, 0 updated, 2 skipped');
+
+        $this->assertSame(1, AttendanceRecord::where('status', 'closed')->count());
+        $this->assertSame(8.0, AttendanceRecord::where('status', 'closed')->first()->paidHours());
+        $this->assertSame(1, AttendanceRecord::where('status', 'scheduled')->count());
+
+        $skipped = session('import_skipped');
+        $this->assertStringContainsString('Nobody Here', $skipped[0]);
+        $this->assertStringContainsString('already has a shift', $skipped[1]);
     }
 
     public function test_the_simple_menu_hides_the_extra_areas_until_switched_off(): void

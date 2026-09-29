@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\AttendanceRecord;
 use App\Models\InventoryItem;
 use App\Models\StaffProfile;
+use App\Models\WagePayment;
 use App\Services\CsvFile;
 use App\Services\Timesheet;
 use Carbon\CarbonImmutable;
@@ -39,6 +40,17 @@ class ExcelExportController extends Controller
         'Date', 'Name', 'Job', 'Rostered start', 'Clock in', 'Clock out',
         'Break minutes', 'Paid hours', 'Status',
     ];
+
+    /**
+     * What the shift importer reads. The export's own columns import too
+     * (Clock in / Clock out); these are the plain names for a hand-made sheet.
+     *
+     * @var list<string>
+     */
+    public const SHIFT_IMPORT_COLUMNS = ['Date', 'Name', 'Start', 'Finish', 'Break minutes'];
+
+    /** @var list<string> */
+    public const WAGE_COLUMNS = ['Week starting', 'Name', 'Amount', 'Paid by', 'Paid on', 'Notes'];
 
     /** @var array<string, string> */
     public const EMPLOYMENT_TYPES = ['full_time' => 'Full time', 'part_time' => 'Part time', 'event_staff' => 'Event staff'];
@@ -135,6 +147,43 @@ class ExcelExportController extends Controller
         $filename = sprintf('midland-shifts-%s-to-%s.csv', $from->format('Y-m-d'), $to->format('Y-m-d'));
 
         return $this->csv->download($filename, self::SHIFT_COLUMNS, $rows);
+    }
+
+    /**
+     * Wages handed over, by the week they cover — this month unless told otherwise.
+     */
+    public function wages(Request $request): StreamedResponse
+    {
+        $request->validate([
+            'from' => ['nullable', 'date'],
+            'to' => ['nullable', 'date', 'after_or_equal:from'],
+        ]);
+
+        $from = $request->filled('from')
+            ? CarbonImmutable::parse($request->string('from')->toString())
+            : CarbonImmutable::today()->startOfMonth();
+        $to = $request->filled('to')
+            ? CarbonImmutable::parse($request->string('to')->toString())
+            : $from->endOfMonth();
+
+        $rows = WagePayment::query()
+            ->with('staff')
+            ->whereBetween('week_start', [$from->toDateString(), $to->toDateString()])
+            ->orderBy('week_start')
+            ->orderBy('id')
+            ->get()
+            ->map(fn (WagePayment $p): array => [
+                $p->week_start->format('Y-m-d'),
+                $p->staff?->full_name,
+                number_format($p->amount / 100, 2, '.', ''),
+                $p->methodLabel(),
+                $p->paid_on->format('Y-m-d'),
+                $p->notes,
+            ]);
+
+        $filename = sprintf('midland-wages-%s-to-%s.csv', $from->format('Y-m-d'), $to->format('Y-m-d'));
+
+        return $this->csv->download($filename, self::WAGE_COLUMNS, $rows);
     }
 
     private function filename(string $sheet): string
