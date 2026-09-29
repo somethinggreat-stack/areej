@@ -31,3 +31,6 @@ yarn-error.log
 /FilesbyClient
 /MessagesofClient.txt
 /docs
+
+# Local agent workspaces
+/.claude/worktrees
