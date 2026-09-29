@@ -61,6 +61,7 @@ class StaffController extends Controller
             'week' => $this->timesheet->forStaff($staffProfile, $week),
             'weekStart' => $week,
             'leave' => $staffProfile->leaveRequests()->latest('starts_on')->limit(20)->get(),
+            'wages' => $staffProfile->wagePayments()->latest('week_start')->latest('id')->limit(20)->get(),
             'recent' => $staffProfile->attendanceRecords()
                 ->with('order')
                 ->latest('worked_on')
@@ -172,16 +173,24 @@ class StaffController extends Controller
      */
     private function validated(Request $request): array
     {
-        return $request->validate([
+        $data = $request->validate([
             'full_name' => ['required', 'string', 'max:255'],
             'phone' => ['nullable', 'string', 'max:32'],
-            'employment_type' => ['required', 'in:full_time,part_time,event_staff'],
-            'department' => ['required', 'in:kitchen,service,delivery,management'],
+            'employment_type' => ['nullable', 'in:full_time,part_time,event_staff'],
+            'department' => ['nullable', 'in:kitchen,service,delivery,management'],
             'hourly_rate' => ['nullable', 'numeric', 'min:0', 'max:500'],
             'overtime_rate' => ['nullable', 'numeric', 'min:0', 'max:500'],
             'holiday_allowance_hours' => ['nullable', 'integer', 'min:0', 'max:2000'],
             'started_on' => ['nullable', 'date'],
             'is_active' => ['boolean'],
         ]);
+
+        // Adding someone needs only a name: the rest has sensible defaults so
+        // the form can stay three boxes long.
+        $data['employment_type'] ??= 'full_time';
+        $data['department'] ??= 'kitchen';
+        $data['holiday_allowance_hours'] ??= 0;
+
+        return $data;
     }
 }

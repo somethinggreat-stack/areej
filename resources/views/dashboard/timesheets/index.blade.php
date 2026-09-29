@@ -64,6 +64,9 @@
                             <th class="px-4 py-3 text-end">{{ __('Total') }}</th>
                         @endif
                         <th class="px-4 py-3 text-end">{{ __('Absent') }}</th>
+                        @if (auth()->user()->canSeeFinancials())
+                            <th class="px-4 py-3 text-end">{{ __('Paid') }}</th>
+                        @endif
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-line">
@@ -82,6 +85,33 @@
                             <td class="px-4 py-3 text-end tabular-nums {{ $row['absences'] ? 'font-semibold text-bad' : 'text-text-faint' }}">
                                 {{ $row['absences'] }}
                             </td>
+                            @if (auth()->user()->canSeeFinancials())
+                                @php $paid = $payments->get($row['staff']->id, collect()); @endphp
+                                <td class="px-4 py-3 text-end">
+                                    @foreach ($paid as $payment)
+                                        <div class="flex items-center justify-end gap-2 whitespace-nowrap">
+                                            <x-badge tone="good">{{ money($payment->amount) }} · {{ $payment->methodLabel() }} · {{ $payment->paid_on->format('j M') }}</x-badge>
+                                            <form method="POST" action="{{ route('wage-payments.destroy', $payment) }}">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" class="text-xs text-text-faint hover:text-bad" data-confirm="{{ __('Remove this payment?') }}" aria-label="{{ __('Remove this payment') }}">✕</button>
+                                            </form>
+                                        </div>
+                                    @endforeach
+                                    @if ($paid->isEmpty())
+                                        <form method="POST" action="{{ route('timesheets.pay') }}" class="flex items-center justify-end gap-2">
+                                            @csrf
+                                            <input type="hidden" name="staff_profile_id" value="{{ $row['staff']->id }}">
+                                            <input type="hidden" name="week" value="{{ $week->toDateString() }}">
+                                            <label class="sr-only" for="pay-{{ $row['staff']->id }}">{{ __('Amount') }}</label>
+                                            <input id="pay-{{ $row['staff']->id }}" name="amount" type="number" step="0.01" min="0.01" required
+                                                   value="{{ number_format($row['total_pay'], 2, '.', '') }}"
+                                                   class="tap w-24 rounded-lg border border-line-strong bg-surface px-2 py-1 text-end text-sm text-text tabular-nums">
+                                            <x-btn type="submit" size="sm">{{ __('Paid in cash') }}</x-btn>
+                                        </form>
+                                    @endif
+                                </td>
+                            @endif
                         </tr>
                     @endforeach
                 </tbody>

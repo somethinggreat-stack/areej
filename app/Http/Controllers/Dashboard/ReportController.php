@@ -9,6 +9,7 @@ use App\Models\Order;
 use App\Models\Quote;
 use App\Models\StockMovement;
 use App\Models\WasteLog;
+use App\Services\CsvFile;
 use App\Services\OperationsFeed;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -148,20 +149,7 @@ class ReportController extends Controller
         [$headers, $rows] = $builders[$report]();
         $filename = sprintf('midland-%s-%s-to-%s.csv', $report, $from->format('Y-m-d'), $to->format('Y-m-d'));
 
-        return response()->streamDownload(function () use ($headers, $rows): void {
-            $out = fopen('php://output', 'wb');
-
-            // Excel needs the BOM to read UTF-8 — without it Urdu names arrive
-            // as mojibake in the one program the client actually opens these in.
-            fwrite($out, "\xEF\xBB\xBF");
-            fputcsv($out, $headers);
-
-            foreach ($rows as $row) {
-                fputcsv($out, $row);
-            }
-
-            fclose($out);
-        }, $filename, ['Content-Type' => 'text/csv; charset=UTF-8']);
+        return app(CsvFile::class)->download($filename, $headers, $rows);
     }
 
     private function exportJobs(Carbon $from, Carbon $to): array

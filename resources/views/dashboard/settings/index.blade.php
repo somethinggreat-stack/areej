@@ -13,7 +13,7 @@
         @foreach ($groups as $groupName => $rows)
             <section class="card p-5">
                 <h2 class="text-sm font-semibold text-text">
-                    {{ ['sales' => __('Sales & quotes'), 'stock' => __('Stock'), 'people' => __('People & pay'), 'money' => __('Money')][$groupName] ?? __(ucfirst($groupName)) }}
+                    {{ ['menu' => __('Menu'), 'sales' => __('Sales & quotes'), 'stock' => __('Stock'), 'people' => __('People & pay'), 'money' => __('Money')][$groupName] ?? __(ucfirst($groupName)) }}
                 </h2>
 
                 <div class="mt-4 grid gap-4 sm:grid-cols-2">

@@ -7,6 +7,8 @@ use App\Http\Controllers\Dashboard\CalendarController;
 use App\Http\Controllers\Dashboard\DishController;
 use App\Http\Controllers\Dashboard\EnquiryInboxController;
 use App\Http\Controllers\Dashboard\EquipmentController;
+use App\Http\Controllers\Dashboard\ExcelExportController;
+use App\Http\Controllers\Dashboard\ExcelImportController;
 use App\Http\Controllers\Dashboard\ExpenseController;
 use App\Http\Controllers\Dashboard\InventoryItemController;
 use App\Http\Controllers\Dashboard\MyTimesheetController;
@@ -251,6 +253,9 @@ Route::middleware(['auth', 'active'])->prefix('dashboard')->group(function (): v
 
         Route::get('timesheets', [TimesheetController::class, 'index'])->name('timesheets');
         Route::post('timesheets/approve', [TimesheetController::class, 'approve'])->name('timesheets.approve');
+        Route::post('timesheets/pay', [TimesheetController::class, 'pay'])->name('timesheets.pay');
+        Route::delete('wage-payments/{wagePayment}', [TimesheetController::class, 'destroyPayment'])->name('wage-payments.destroy');
+        Route::post('attendance/quick', [AttendanceController::class, 'storeQuick'])->name('attendance.quick');
 
         Route::get('activity', [ActivityController::class, 'index'])->name('activity');
 
@@ -258,6 +263,18 @@ Route::middleware(['auth', 'active'])->prefix('dashboard')->group(function (): v
         Route::post('logins', [UserController::class, 'store'])->name('users.store');
         Route::patch('logins/{user}', [UserController::class, 'update'])->name('users.update');
         Route::post('logins/{user}/password', [UserController::class, 'resetPassword'])->name('users.password');
+    });
+
+    /* ------------------------------------------------ excel in and out */
+    Route::middleware('role:80')->group(function (): void {
+        Route::get('excel/staff/export', [ExcelExportController::class, 'staff'])->name('excel.staff.export');
+        Route::get('excel/shifts/export', [ExcelExportController::class, 'shifts'])->name('excel.shifts.export');
+        Route::get('excel/stock/export', [ExcelExportController::class, 'stock'])->name('excel.stock.export');
+
+        Route::get('excel/staff/template', [ExcelImportController::class, 'staffTemplate'])->name('excel.staff.template');
+        Route::get('excel/stock/template', [ExcelImportController::class, 'stockTemplate'])->name('excel.stock.template');
+        Route::post('excel/staff/import', [ExcelImportController::class, 'staff'])->name('excel.staff.import');
+        Route::post('excel/stock/import', [ExcelImportController::class, 'stock'])->name('excel.stock.import');
     });
 
     /* --------------------------------------------------------- settings */

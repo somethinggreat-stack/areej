@@ -33,10 +33,10 @@
             'items' => [
                 ['route' => 'inventory', 'icon' => 'box', 'label' => __('Inventory'), 'level' => 50],
                 ['route' => 'stock-counts', 'icon' => 'check', 'label' => __('Stock counts'), 'level' => 50],
-                ['route' => 'purchase-orders', 'icon' => 'cart', 'label' => __('Purchasing'), 'level' => 40],
-                ['route' => 'suppliers', 'icon' => 'truck', 'label' => __('Suppliers'), 'level' => 40],
-                ['route' => 'waste', 'icon' => 'trash', 'label' => __('Waste'), 'level' => 50],
-                ['route' => 'equipment', 'icon' => 'stack', 'label' => __('Equipment'), 'level' => 50],
+                ['route' => 'purchase-orders', 'icon' => 'cart', 'label' => __('Purchasing'), 'level' => 40, 'advanced' => true],
+                ['route' => 'suppliers', 'icon' => 'truck', 'label' => __('Suppliers'), 'level' => 40, 'advanced' => true],
+                ['route' => 'waste', 'icon' => 'trash', 'label' => __('Waste'), 'level' => 50, 'advanced' => true],
+                ['route' => 'equipment', 'icon' => 'stack', 'label' => __('Equipment'), 'level' => 50, 'advanced' => true],
             ],
         ],
         [
@@ -58,20 +58,24 @@
             'label' => __('System'),
             'items' => [
                 ['route' => 'users', 'icon' => 'key', 'label' => __('Logins'), 'level' => 80],
-                ['route' => 'activity', 'icon' => 'activity', 'label' => __('Activity'), 'level' => 80],
+                ['route' => 'activity', 'icon' => 'activity', 'label' => __('Activity'), 'level' => 80, 'advanced' => true],
                 ['route' => 'settings', 'icon' => 'settings', 'label' => __('Settings'), 'level' => 100],
             ],
         ],
     ];
 
     $user = auth()->user();
+    // Settings → Simple menu hides the areas most days never need. The pages
+    // themselves stay reachable; only the menu gets shorter.
+    $simpleMenu = (bool) \App\Models\Setting::get('simple_menu', true);
 
     $visible = collect($groups)
-        ->map(function (array $group) use ($user): array {
+        ->map(function (array $group) use ($user, $simpleMenu): array {
             $group['items'] = array_values(array_filter(
                 $group['items'],
                 fn (array $item) => ($user?->hasRoleLevel($item['level']) ?? false)
                     && (! isset($item['when']) || $item['when']($user))
+                    && ! (($item['advanced'] ?? false) && $simpleMenu)
                     && \Illuminate\Support\Facades\Route::has($item['route'])
             ));
 

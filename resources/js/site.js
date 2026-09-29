@@ -7,7 +7,7 @@ import {
     initPageTransitions, initCounters, initStatement,
     initPinnedStory, initServicesJourney, initProcessTimeline, initCollage, initSpotlight,
 } from './modules/interactions';
-import { initGallery, initTestimonials, initQuoteSteps } from './modules/gallery';
+import { initGallery, initTestimonials, initGuestPresets } from './modules/gallery';
 
 gsap.registerPlugin(ScrollTrigger, SplitText, DrawSVGPlugin);
 gsap.defaults({ ease: 'expo.out', duration: 1.1 });
@@ -428,7 +428,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initCollage();
     initSpotlight();
     initTestimonials();
-    initQuoteSteps();
+    initGuestPresets();
     initGallery(lockScroll, unlockScroll);
 
     runLoader().then(runHero);

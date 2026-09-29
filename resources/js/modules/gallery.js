@@ -244,104 +244,36 @@ export function initTestimonials() {
 }
 
 /* -------------------------------------------------------------------------
- * Multi-step quote form. Falls back to one long scrolling form when the
- * browser has no JS — every field stays in the DOM and posts either way.
+ * Quick-pick guest numbers on the enquiry form. Purely a shortcut: the
+ * number field works on its own when the browser has no JS.
  * ---------------------------------------------------------------------- */
-export function initQuoteSteps() {
-    const form = document.querySelector('[data-quote-form]');
+export function initGuestPresets() {
+    const form = document.querySelector('[data-enquiry-form]');
     if (!form) return;
 
-    const steps = Array.from(form.querySelectorAll('[data-quote-step]'));
-    const bars = Array.from(form.querySelectorAll('[data-quote-bar]'));
-    const labelEl = form.querySelector('[data-quote-step-label]');
-    const numberEl = form.querySelector('[data-quote-step-number]');
-    const backBtn = form.querySelector('[data-quote-back]');
-    const nextBtn = form.querySelector('[data-quote-next]');
-    const submitBtn = form.querySelector('[data-quote-submit]');
-    if (steps.length < 2 || !nextBtn) return;
-
-    // Guest-count shortcuts. Wired before the error bail-out below so they keep
-    // working on a form that came back with validation messages.
     const guests = form.querySelector('#guests');
     const presets = Array.from(form.querySelectorAll('[data-guest-preset]'));
+    if (!guests || !presets.length) return;
 
-    if (guests && presets.length) {
-        const markActive = () => {
-            presets.forEach((b) => {
-                const on = b.dataset.guestPreset === guests.value;
-                b.setAttribute('aria-pressed', on ? 'true' : 'false');
-                b.classList.toggle('border-gold', on);
-                b.classList.toggle('text-gold', on);
-                b.classList.toggle('border-cream/18', !on);
-                b.classList.toggle('text-cream/58', !on);
-            });
-        };
-
-        presets.forEach((button) => {
-            button.setAttribute('aria-pressed', 'false');
-            button.addEventListener('click', () => {
-                guests.value = button.dataset.guestPreset;
-                guests.dispatchEvent(new Event('input', { bubbles: true }));
-                markActive();
-            });
+    const markActive = () => {
+        presets.forEach((b) => {
+            const on = b.dataset.guestPreset === guests.value;
+            b.setAttribute('aria-pressed', on ? 'true' : 'false');
+            b.classList.toggle('border-gold', on);
+            b.classList.toggle('text-gold', on);
+            b.classList.toggle('border-cream/18', !on);
+            b.classList.toggle('text-cream/60', !on);
         });
-
-        guests.addEventListener('input', markActive);
-        markActive();
-    }
-
-    // If the server bounced the form back with errors, show everything so the
-    // problem is never hidden on a step the visitor cannot see.
-    if (form.dataset.hasErrors === 'true') return;
-
-    form.dataset.steps = 'on';
-    let current = 0;
-
-    const render = () => {
-        steps.forEach((s, i) => {
-            s.hidden = i !== current;
-            if (i === current && !reduced()) {
-                gsap.fromTo(s, { autoAlpha: 0, x: 32 }, { autoAlpha: 1, x: 0, duration: 0.45, ease: 'expo.out' });
-            }
-        });
-
-        bars.forEach((b, i) => {
-            const fill = b.querySelector('span');
-            if (fill) fill.style.transform = `scaleX(${i < current ? 1 : i === current ? 0.5 : 0})`;
-        });
-
-        if (labelEl) labelEl.textContent = steps[current].dataset.quoteStep;
-        if (numberEl) numberEl.textContent = `0${current + 1}`;
-
-        backBtn.disabled = current === 0;
-        nextBtn.hidden = current === steps.length - 1;
-        submitBtn.hidden = current !== steps.length - 1;
     };
 
-    /** Uses the browser's own validation so messages stay native and localised. */
-    const stepIsValid = () => {
-        const fields = steps[current].querySelectorAll('input, select, textarea');
-        for (const field of fields) {
-            if (!field.checkValidity()) {
-                field.reportValidity();
-                return false;
-            }
-        }
-        return true;
-    };
-
-    nextBtn.addEventListener('click', () => {
-        if (!stepIsValid()) return;
-        current = Math.min(steps.length - 1, current + 1);
-        render();
-        form.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    presets.forEach((button) => {
+        button.addEventListener('click', () => {
+            guests.value = button.dataset.guestPreset;
+            guests.dispatchEvent(new Event('input', { bubbles: true }));
+            markActive();
+        });
     });
 
-    backBtn.addEventListener('click', () => {
-        current = Math.max(0, current - 1);
-        render();
-        form.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    });
-
-    render();
+    guests.addEventListener('input', markActive);
+    markActive();
 }

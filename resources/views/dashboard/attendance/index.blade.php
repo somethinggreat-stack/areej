@@ -4,6 +4,7 @@
 @section('subtitle', $day->format('l j F Y'))
 
 @section('content')
+    @include('dashboard.partials.export-button', ['sheet' => 'shifts'])
     <form method="GET" class="card mb-5 flex flex-wrap items-end gap-3 p-4">
         <x-field name="day" type="date" :label="__('Day')" :value="$day->toDateString()" />
         <x-btn variant="secondary" type="submit">{{ __('Show') }}</x-btn>
@@ -23,6 +24,68 @@
             </div>
         @endforeach
     </div>
+
+    {{-- The simple way: everyone's hours for the day in one grid, one Save. --}}
+    @if (! $day->isFuture())
+        <details class="card mb-5 overflow-hidden" open>
+            <summary class="tap flex cursor-pointer list-none items-center justify-between gap-3 px-5 py-4">
+                <span>
+                    <span class="block text-sm font-semibold text-text">{{ __('Quick shifts for :day', ['day' => $day->format('l j M')]) }}</span>
+                    <span class="block text-xs text-text-muted">{{ __('Type start and finish for whoever worked, leave the rest blank, then Save. A finish after midnight is fine.') }}</span>
+                </span>
+                <x-icon name="clock" class="size-4 shrink-0 text-text-faint" />
+            </summary>
+
+            <form method="POST" action="{{ route('attendance.quick') }}" class="border-t border-line">
+                @csrf
+                <input type="hidden" name="worked_on" value="{{ $day->toDateString() }}">
+                <div class="table-scroll">
+                    <table class="w-full min-w-[34rem] text-sm">
+                        <thead class="border-b border-line bg-surface-2">
+                            <tr class="label-sm">
+                                <th class="px-4 py-2.5 text-start">{{ __('Name') }}</th>
+                                <th class="px-2 py-2.5 text-start">{{ __('Start') }}</th>
+                                <th class="px-2 py-2.5 text-start">{{ __('Finish') }}</th>
+                                <th class="px-2 py-2.5 text-start">{{ __('Break (min)') }}</th>
+                                <th class="px-4 py-2.5 text-start">{{ __('Already recorded') }}</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-line">
+                            @foreach ($staff as $person)
+                                @php $existing = $records->where('staff_profile_id', $person->id); @endphp
+                                <tr>
+                                    <td class="px-4 py-2 font-medium text-text">{{ $person->full_name }}</td>
+                                    <td class="px-2 py-2">
+                                        <input type="time" name="shifts[{{ $person->id }}][start]" value="{{ old('shifts.'.$person->id.'.start') }}" aria-label="{{ __('Start for :name', ['name' => $person->full_name]) }}"
+                                               class="tap w-28 rounded-lg border border-line-strong bg-surface px-2 py-1 text-sm text-text tabular-nums">
+                                    </td>
+                                    <td class="px-2 py-2">
+                                        <input type="time" name="shifts[{{ $person->id }}][end]" value="{{ old('shifts.'.$person->id.'.end') }}" aria-label="{{ __('Finish for :name', ['name' => $person->full_name]) }}"
+                                               class="tap w-28 rounded-lg border border-line-strong bg-surface px-2 py-1 text-sm text-text tabular-nums">
+                                    </td>
+                                    <td class="px-2 py-2">
+                                        <input type="number" min="0" max="480" name="shifts[{{ $person->id }}][break]" value="{{ old('shifts.'.$person->id.'.break') }}" placeholder="0" aria-label="{{ __('Break for :name', ['name' => $person->full_name]) }}"
+                                               class="tap w-20 rounded-lg border border-line-strong bg-surface px-2 py-1 text-sm text-text tabular-nums">
+                                    </td>
+                                    <td class="px-4 py-2 text-xs text-text-muted">
+                                        @foreach ($existing as $shift)
+                                            <span class="block">
+                                                {{ $shift->clock_in_at?->format('H:i') ?? '—' }}–{{ $shift->clock_out_at?->format('H:i') ?? '…' }}
+                                                @if ($shift->clock_out_at) · {{ number_format($shift->paidHours(), 2) }} {{ __('hrs') }} @endif
+                                            </span>
+                                        @endforeach
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+                <div class="flex justify-end border-t border-line bg-surface-2 px-5 py-3">
+                    <x-btn type="submit">{{ __('Save shifts') }}</x-btn>
+                </div>
+            </form>
+        </details>
+    @endif
 
     @if ($stillOpen->isNotEmpty() && ! $day->isToday())
         <div class="card mb-5 border-warn/30 bg-warn-bg p-4">

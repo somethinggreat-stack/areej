@@ -4,6 +4,7 @@
 
 @section('content')
     <x-page-head :title="__('Staff')" :subtitle="__('People, rates and holiday')" />
+    @include('dashboard.partials.export-button', ['sheet' => 'staff', 'import' => true])
 
     @if ($pendingLeave->isNotEmpty())
         <div class="card mb-5 overflow-hidden border-warn/35">
@@ -90,14 +91,21 @@
             <h2 class="text-sm font-semibold text-text">{{ __('Add someone') }}</h2>
             <x-field name="full_name" :label="__('Full name')" required />
             <x-field name="phone" type="tel" :label="__('Phone')" />
-            <x-field name="department" type="select" :label="__('Department')" required
-                     :options="['kitchen' => __('Kitchen'), 'service' => __('Service'), 'delivery' => __('Delivery'), 'management' => __('Management')]" />
-            <x-field name="employment_type" type="select" :label="__('Type')" required
-                     :options="['full_time' => __('Full time'), 'part_time' => __('Part time'), 'event_staff' => __('Event staff')]" />
             <x-field name="hourly_rate" type="number" step="0.01" min="0" prefix="£" :label="__('Hourly rate')" />
-            <x-field name="overtime_rate" type="number" step="0.01" min="0" prefix="£" :label="__('Overtime rate')" />
-            <x-field name="holiday_allowance_hours" type="number" min="0" suffix="hrs" :label="__('Holiday allowance')" :value="0" />
-            <x-field name="started_on" type="date" :label="__('Started')" />
+
+            <details class="text-sm">
+                <summary class="tap cursor-pointer list-none text-xs font-semibold text-link">{{ __('More details (optional)') }}</summary>
+                <div class="mt-3 space-y-4">
+                    <x-field name="department" type="select" :label="__('Department')"
+                             :options="['kitchen' => __('Kitchen'), 'service' => __('Service'), 'delivery' => __('Delivery'), 'management' => __('Management')]" />
+                    <x-field name="employment_type" type="select" :label="__('Type')"
+                             :options="['full_time' => __('Full time'), 'part_time' => __('Part time'), 'event_staff' => __('Event staff')]" />
+                    <x-field name="overtime_rate" type="number" step="0.01" min="0" prefix="£" :label="__('Overtime rate')" />
+                    <x-field name="holiday_allowance_hours" type="number" min="0" suffix="hrs" :label="__('Holiday allowance')" :value="0" />
+                    <x-field name="started_on" type="date" :label="__('Started')" />
+                </div>
+            </details>
+
             <x-btn type="submit" class="w-full">{{ __('Add') }}</x-btn>
         </form>
     </div>

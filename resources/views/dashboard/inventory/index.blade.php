@@ -13,6 +13,7 @@
             <x-btn :href="route('inventory.create')" icon="plus">{{ __('Add item') }}</x-btn>
         @endif
     </x-page-head>
+    @include('dashboard.partials.export-button', ['sheet' => 'stock', 'import' => true])
 
     @if ($lowStockCount > 0)
         <a href="{{ route('purchase-orders') }}" class="card mb-5 flex items-center gap-3 border-warn/35 p-4 transition-colors hover:bg-surface-2">

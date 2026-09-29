@@ -75,6 +75,12 @@ class StaffProfile extends Model
         return $this->hasMany(OrderTask::class, 'assigned_to');
     }
 
+    /** @return HasMany<WagePayment, $this> */
+    public function wagePayments(): HasMany
+    {
+        return $this->hasMany(WagePayment::class);
+    }
+
     /** @return HasMany<LeaveRequest, $this> */
     public function leaveRequests(): HasMany
     {

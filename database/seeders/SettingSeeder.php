@@ -32,6 +32,7 @@ class SettingSeeder extends Seeder
 
             // Money
             ['vat_registered', 0, 'bool', 'money'],
+            ['simple_menu', 1, 'bool', 'menu'],
             ['vat_percent', 20, 'int', 'money'],
             ['currency_symbol', '£', 'string', 'money'],
         ];

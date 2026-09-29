@@ -9,6 +9,7 @@
         <x-btn variant="secondary" :href="route('calendar')" icon="calendar">{{ __('Diary') }}</x-btn>
         <x-btn :href="route('orders.create')" icon="plus">{{ __('Take an order') }}</x-btn>
     </x-page-head>
+    @include('dashboard.partials.export-button', ['sheet' => 'orders'])
 
     <div class="mb-5 grid gap-4 sm:grid-cols-3">
         <x-stat :label="__('Next 7 days')" :value="$thisWeek" icon="calendar" />

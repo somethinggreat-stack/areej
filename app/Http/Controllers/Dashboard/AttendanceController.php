@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\AttendanceRecord;
 use App\Models\Order;
 use App\Models\StaffProfile;
+use Carbon\CarbonImmutable;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -163,6 +164,63 @@ class AttendanceController extends Controller
         $record->delete();
 
         return back()->with('status', __('Shift removed for :name.', ['name' => $name]));
+    }
+
+    /**
+     * The simple way: type everyone's start and finish for a day in one grid
+     * and save once. Rows left blank are skipped; a finish earlier than the
+     * start is taken as the next morning, so late events need no workaround.
+     */
+    public function storeQuick(Request $request): RedirectResponse
+    {
+        $data = $request->validate([
+            'worked_on' => ['required', 'date', 'before_or_equal:today'],
+            'shifts' => ['required', 'array'],
+            'shifts.*.start' => ['nullable', 'date_format:H:i'],
+            'shifts.*.end' => ['nullable', 'date_format:H:i'],
+            'shifts.*.break' => ['nullable', 'integer', 'min:0', 'max:480'],
+        ]);
+
+        $day = CarbonImmutable::parse($data['worked_on'])->startOfDay();
+        $filled = collect($data['shifts'])->filter(fn (array $row) => filled($row['start'] ?? null) && filled($row['end'] ?? null));
+
+        if ($filled->isEmpty()) {
+            return back()->withErrors(['form' => __('Type a start and finish time for at least one person.')]);
+        }
+
+        $staff = StaffProfile::whereIn('id', $filled->keys())->get()->keyBy('id');
+
+        DB::transaction(function () use ($filled, $staff, $day, $request): void {
+            foreach ($filled as $staffId => $row) {
+                $person = $staff->get($staffId);
+
+                if ($person === null) {
+                    continue;
+                }
+
+                $in = $day->setTimeFromTimeString($row['start']);
+                $out = $day->setTimeFromTimeString($row['end']);
+
+                if ($out->lessThanOrEqualTo($in)) {
+                    $out = $out->addDay();
+                }
+
+                AttendanceRecord::create([
+                    'staff_profile_id' => $person->id,
+                    'worked_on' => $day->toDateString(),
+                    'clock_in_at' => $in,
+                    'clock_out_at' => $out,
+                    'break_minutes' => (int) ($row['break'] ?? 0),
+                    'method' => 'manual',
+                    'status' => 'closed',
+                    'hourly_rate' => $person->hourly_rate,
+                    'overtime_rate' => $person->overtime_rate,
+                    'recorded_by' => $request->user()->id,
+                ]);
+            }
+        });
+
+        return back()->with('status', trans_choice('{1}1 shift saved.|[2,*]:count shifts saved.', $filled->count(), ['count' => $filled->count()]));
     }
 
     /**

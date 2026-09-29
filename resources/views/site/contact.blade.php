@@ -6,11 +6,10 @@
 
     $styles = ['Delivery', 'Collection', 'Delivered and served', 'Full buffet setup', 'Not sure yet'];
     $extras = ['Kitchen serving staff', 'Waiter service', 'Cutlery & crockery hire', 'Serving dishes', 'Venue hire', 'Hot drinks station'];
-    $stepNames = ['Occasion', 'Details', 'Service', 'You'];
 
-    // Steps only collapse when there is nothing to fix. On a validation bounce
-    // the JS stands down, so every field has to be on the page.
-    $stepped = ! $errors->any();
+    $fieldClass = 'mt-2 w-full border border-cream/20 bg-ink/40 px-4 py-3.5 text-base text-cream outline-none transition-colors placeholder:text-cream/30 focus:border-gold';
+    $labelClass = 'block text-sm font-medium text-cream';
+    $choiceClass = 'flex min-h-12 cursor-pointer items-center gap-3 border border-cream/18 px-4 py-3 text-sm text-cream/80 transition-colors duration-400 hover:border-cream/45 hover:text-cream has-checked:border-gold has-checked:bg-gold/10 has-checked:text-gold has-focus-visible:border-gold';
 @endphp
 
 @section('title', 'Contact & Quotes')
@@ -20,7 +19,7 @@
     <x-site.page-hero
         eyebrow="Let’s plan your event"
         :lines="['Tell us about', 'the occasion.']"
-        lede="Four short steps. Give us the date, the numbers and the kind of event, and we will come back with a menu and a quote — usually within a working day."
+        lede="One short form. Give us the date, the numbers and the kind of event, and we will come back with a menu and a quote — usually within a working day."
         image="event-glassware"
         :meta="['Free quotes', 'Short notice welcome', 'Halal']" />
 
@@ -45,36 +44,22 @@
                         </div>
                     </div>
                 @else
-                    {{-- Multi-step when JS is available, one long form when it is not.
-                         Every field stays in the DOM either way, so it always posts. --}}
-                    <form data-quote-form data-has-errors="{{ $errors->any() ? 'true' : 'false' }}"
-                          method="POST" action="{{ route('site.enquiry.store') }}"
+                    {{-- One page, one form. Only a name and a phone or email are required. --}}
+                    <form data-enquiry-form method="POST" action="{{ route('site.enquiry.store') }}"
                           class="border border-cream/12 bg-navy">
                         @csrf
 
-                        <div class="border-b border-cream/10 px-6 pt-7 pb-5 sm:px-10">
-                            @if ($stepped)
-                                <span class="eyebrow text-gold">
-                                    Step <span data-quote-step-number>01</span> of 0{{ count($stepNames) }}
-                                </span>
-                                <h2 data-quote-step-label class="display-md mt-2 text-cream">{{ $stepNames[0] }}</h2>
-
-                                <div class="mt-6 flex gap-1.5">
-                                    @foreach ($stepNames as $step)
-                                        <span data-quote-bar class="relative h-[3px] flex-1 overflow-hidden bg-cream/12">
-                                            <span class="absolute inset-0 origin-left bg-gold transition-transform duration-600 ease-[cubic-bezier(0.16,1,0.3,1)]" style="transform: scaleX(0)"></span>
-                                        </span>
-                                    @endforeach
-                                </div>
-                            @else
-                                <span class="eyebrow text-gold">Your enquiry</span>
-                                <h2 class="display-md mt-2 text-cream">Nearly there</h2>
-                            @endif
+                        <div class="border-b border-cream/10 px-5 pt-8 pb-6 sm:px-10">
+                            <span class="eyebrow text-gold">Free quote</span>
+                            <h2 class="display-md mt-2 text-cream">Send us an enquiry</h2>
+                            <p class="mt-3 text-base text-cream/70">
+                                Fill in as much as you know. We only need your name and a phone number or email.
+                            </p>
                         </div>
 
-                        <div class="px-6 py-9 sm:px-10">
+                        <div class="space-y-12 px-5 py-9 sm:px-10">
                             @if ($errors->any())
-                                <div role="alert" class="mb-7 border border-gold-lit/40 bg-gold-lit/8 px-4 py-3 text-sm text-gold-lit">
+                                <div role="alert" class="border border-gold-lit/40 bg-gold-lit/8 px-4 py-3 text-base text-gold-lit">
                                     <p class="font-semibold">Please check the following:</p>
                                     <ul class="mt-2 list-inside list-disc space-y-1">
                                         @foreach ($errors->all() as $error)
@@ -84,128 +69,117 @@
                                 </div>
                             @endif
 
-                            <div data-quote-step="Occasion">
-                                @unless ($stepped)
-                                    <h3 class="display-md mb-7 text-cream">Occasion</h3>
-                                @endunless
-                                <fieldset>
-                                    <legend class="eyebrow text-gold">What are we catering?</legend>
-                                    <div class="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                                        @foreach ($services as $s)
-                                            <label class="group/ch cursor-pointer border border-cream/15 p-4 transition-colors duration-500 hover:border-cream/40 has-checked:border-gold has-checked:bg-gold/8">
-                                                <input type="radio" name="event_type" value="{{ $s['title'] }}" class="sr-only" @checked(old('event_type') === $s['title'])>
-                                                <span class="block text-sm font-medium text-cream group-has-checked/ch:text-gold">{{ $s['title'] }}</span>
-                                                <span class="mt-1 block text-[0.74rem] text-cream/58">{{ $s['detail'] }}</span>
-                                            </label>
-                                        @endforeach
-                                    </div>
-                                </fieldset>
-                            </div>
-
-                            <div data-quote-step="Details" @if ($stepped) hidden @else class="mt-12 border-t border-cream/10 pt-10" @endif>
-                                @unless ($stepped)
-                                    <h3 class="display-md mb-7 text-cream">Details</h3>
-                                @endunless
-                                <div class="grid gap-6 sm:grid-cols-2">
+                            <fieldset>
+                                <legend class="display-md text-cream">How can we reach you?</legend>
+                                <div class="mt-6 grid gap-6">
                                     <div>
-                                        <label for="event_date" class="eyebrow text-cream/58">Event date</label>
-                                        <input id="event_date" name="event_date" type="date" value="{{ old('event_date') }}" min="{{ now()->toDateString() }}"
-                                               class="mt-1.5 w-full border-b border-cream/20 bg-transparent px-0.5 pt-2 pb-3 text-cream outline-none transition-colors focus:border-gold">
-                                    </div>
-                                    <div>
-                                        <label for="venue" class="eyebrow text-cream/58">Venue or area <span class="text-cream/40">Optional</span></label>
-                                        <input id="venue" name="venue" type="text" value="{{ old('venue') }}" placeholder="e.g. community hall, Sparkbrook"
-                                               class="mt-1.5 w-full border-b border-cream/20 bg-transparent px-0.5 pt-2 pb-3 text-cream outline-none transition-colors placeholder:text-cream/25 focus:border-gold">
-                                    </div>
-                                </div>
-
-                                <div class="mt-8">
-                                    <label for="guests" class="eyebrow text-cream/58">Approximate guests</label>
-                                    <p class="mt-1.5 text-[0.74rem] text-cream/58">
-                                        Minimum {{ $mc['guests']['min'] }} for full catering, or fewer for starters only. Up to {{ number_format($mc['guests']['max']) }}.
-                                    </p>
-                                    <div class="mt-3 flex flex-wrap items-center gap-5">
-                                        <input id="guests" name="guests" type="number" min="1" max="2000" value="{{ old('guests', 100) }}"
-                                               class="font-display w-32 border-b border-cream/20 bg-transparent px-0.5 pt-2 pb-3 text-2xl font-light text-cream tabular-nums outline-none transition-colors focus:border-gold">
-                                        <div class="flex flex-wrap gap-2">
-                                            @foreach ([20, 50, 100, 250, 500, 1000] as $n)
-                                                <button type="button" data-guest-preset="{{ $n }}"
-                                                        class="rounded-full border border-cream/18 px-4 py-2 text-[0.66rem] font-semibold tracking-[0.12em] text-cream/58 uppercase tabular-nums transition-colors duration-400 hover:border-gold hover:text-gold">
-                                                    {{ $n }}
-                                                </button>
-                                            @endforeach
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div data-quote-step="Service" @if ($stepped) hidden @else class="mt-12 border-t border-cream/10 pt-10" @endif>
-                                @unless ($stepped)
-                                    <h3 class="display-md mb-7 text-cream">Service</h3>
-                                @endunless
-                                <fieldset>
-                                    <legend class="eyebrow text-gold">How should it reach you?</legend>
-                                    <div class="mt-5 flex flex-wrap gap-2.5">
-                                        @foreach ($styles as $style)
-                                            <label class="cursor-pointer rounded-full border border-cream/18 px-4 py-2.5 text-[0.68rem] font-semibold tracking-[0.12em] text-cream/60 transition-colors duration-400 hover:border-cream/45 hover:text-cream has-checked:border-gold has-checked:bg-gold has-checked:text-ink">
-                                                <input type="radio" name="service_style" value="{{ $style }}" class="sr-only" @checked(old('service_style') === $style)>
-                                                {{ $style }}
-                                            </label>
-                                        @endforeach
-                                    </div>
-                                </fieldset>
-
-                                <fieldset class="mt-9">
-                                    <legend class="eyebrow text-gold">Anything else you need?</legend>
-                                    <div class="mt-5 flex flex-wrap gap-2.5">
-                                        @foreach ($extras as $extra)
-                                            <label class="cursor-pointer rounded-full border border-cream/18 px-4 py-2.5 text-[0.68rem] font-semibold tracking-[0.12em] text-cream/60 transition-colors duration-400 hover:border-cream/45 hover:text-cream has-checked:border-gold has-checked:bg-gold has-checked:text-ink">
-                                                <input type="checkbox" name="extras[]" value="{{ $extra }}" class="sr-only" @checked(in_array($extra, old('extras', []), true))>
-                                                {{ $extra }}
-                                            </label>
-                                        @endforeach
-                                    </div>
-                                </fieldset>
-
-                                <div class="mt-9">
-                                    <label for="dietary" class="eyebrow text-cream/58">Dietary requirements <span class="text-cream/40">Optional</span></label>
-                                    <input id="dietary" name="dietary" type="text" value="{{ old('dietary') }}" placeholder="e.g. 20 vegetarian, 4 nut allergies"
-                                           class="mt-1.5 w-full border-b border-cream/20 bg-transparent px-0.5 pt-2 pb-3 text-cream outline-none transition-colors placeholder:text-cream/25 focus:border-gold">
-                                </div>
-                            </div>
-
-                            <div data-quote-step="You" @if ($stepped) hidden @else class="mt-12 border-t border-cream/10 pt-10" @endif>
-                                @unless ($stepped)
-                                    <h3 class="display-md mb-7 text-cream">You</h3>
-                                @endunless
-                                <div class="grid gap-6">
-                                    <div>
-                                        <label for="name" class="eyebrow text-cream/58">Your name</label>
+                                        <label for="name" class="{{ $labelClass }}">Your name</label>
                                         <input id="name" name="name" type="text" required autocomplete="name" value="{{ old('name') }}"
-                                               class="mt-1.5 w-full border-b border-cream/20 bg-transparent px-0.5 pt-2 pb-3 text-cream outline-none transition-colors focus:border-gold">
+                                               class="{{ $fieldClass }}">
                                     </div>
 
                                     <div class="grid gap-6 sm:grid-cols-2">
                                         <div>
-                                            <label for="phone" class="eyebrow text-cream/58">Phone</label>
+                                            <label for="phone" class="{{ $labelClass }}">Phone</label>
                                             <input id="phone" name="phone" type="tel" inputmode="tel" autocomplete="tel" value="{{ old('phone') }}"
-                                                   class="mt-1.5 w-full border-b border-cream/20 bg-transparent px-0.5 pt-2 pb-3 text-cream outline-none transition-colors focus:border-gold">
+                                                   class="{{ $fieldClass }}">
                                         </div>
                                         <div>
-                                            <label for="email" class="eyebrow text-cream/58">Email</label>
+                                            <label for="email" class="{{ $labelClass }}">Email</label>
                                             <input id="email" name="email" type="email" inputmode="email" autocomplete="email" value="{{ old('email') }}"
-                                                   class="mt-1.5 w-full border-b border-cream/20 bg-transparent px-0.5 pt-2 pb-3 text-cream outline-none transition-colors focus:border-gold">
+                                                   class="{{ $fieldClass }}">
                                         </div>
                                     </div>
-                                    <p class="text-[0.74rem] text-cream/58">A phone number or an email — either is enough for us to reply.</p>
+                                    <p class="text-sm text-cream/60">A phone number or an email — either is enough for us to reply.</p>
+                                </div>
+                            </fieldset>
 
-                                    <div>
-                                        <label for="message" class="eyebrow text-cream/58">Anything else we should know? <span class="text-cream/40">Optional</span></label>
-                                        <textarea id="message" name="message" rows="4"
-                                                  class="mt-1.5 w-full resize-y border-b border-cream/20 bg-transparent px-0.5 py-3 text-cream outline-none transition-colors focus:border-gold">{{ old('message') }}</textarea>
+                            <fieldset class="border-t border-cream/10 pt-10">
+                                <legend class="display-md float-left w-full text-cream">About your event</legend>
+
+                                <div class="clear-both pt-6">
+                                    <p class="{{ $labelClass }}" id="event_type_label">What is the occasion?</p>
+                                    <div role="radiogroup" aria-labelledby="event_type_label" class="mt-3 grid gap-2.5 sm:grid-cols-2">
+                                        @foreach ($services as $s)
+                                            <label class="{{ $choiceClass }}">
+                                                <input type="radio" name="event_type" value="{{ $s['title'] }}" class="size-5 shrink-0 accent-gold" @checked(old('event_type') === $s['title'])>
+                                                <span>{{ $s['title'] }}</span>
+                                            </label>
+                                        @endforeach
                                     </div>
                                 </div>
-                            </div>
+
+                                <div class="mt-8 grid gap-6 sm:grid-cols-2">
+                                    <div>
+                                        <label for="event_date" class="{{ $labelClass }}">Event date</label>
+                                        <input id="event_date" name="event_date" type="date" value="{{ old('event_date') }}" min="{{ now()->toDateString() }}"
+                                               class="{{ $fieldClass }} scheme-dark">
+                                    </div>
+                                    <div>
+                                        <label for="guests" class="{{ $labelClass }}">Number of guests</label>
+                                        <input id="guests" name="guests" type="number" inputmode="numeric" min="1" max="2000" value="{{ old('guests') }}" placeholder="e.g. 100"
+                                               class="{{ $fieldClass }} tabular-nums">
+                                    </div>
+                                </div>
+
+                                <div class="mt-3 flex flex-wrap gap-2" aria-label="Quick guest numbers">
+                                    @foreach ([50, 100, 250, 500, 1000] as $n)
+                                        <button type="button" data-guest-preset="{{ $n }}"
+                                                class="min-h-11 rounded-full border border-cream/18 px-4 text-sm text-cream/60 tabular-nums transition-colors duration-400 hover:border-gold hover:text-gold">
+                                            {{ $n }}
+                                        </button>
+                                    @endforeach
+                                </div>
+                                <p class="mt-3 text-sm text-cream/60">
+                                    Minimum {{ $mc['guests']['min'] }} for full catering, or fewer for starters only. Up to {{ number_format($mc['guests']['max']) }}.
+                                </p>
+
+                                <div class="mt-8">
+                                    <label for="venue" class="{{ $labelClass }}">Venue or area <span class="font-normal text-cream/50">(optional)</span></label>
+                                    <input id="venue" name="venue" type="text" value="{{ old('venue') }}" placeholder="e.g. community hall, Sparkbrook"
+                                           class="{{ $fieldClass }}">
+                                </div>
+                            </fieldset>
+
+                            <fieldset class="border-t border-cream/10 pt-10">
+                                <legend class="display-md float-left w-full text-cream">Food and service</legend>
+
+                                <div class="clear-both pt-6">
+                                    <p class="{{ $labelClass }}" id="service_style_label">How should the food reach you?</p>
+                                    <div role="radiogroup" aria-labelledby="service_style_label" class="mt-3 grid gap-2.5 sm:grid-cols-2">
+                                        @foreach ($styles as $style)
+                                            <label class="{{ $choiceClass }}">
+                                                <input type="radio" name="service_style" value="{{ $style }}" class="size-5 shrink-0 accent-gold" @checked(old('service_style') === $style)>
+                                                <span>{{ $style }}</span>
+                                            </label>
+                                        @endforeach
+                                    </div>
+                                </div>
+
+                                <div class="mt-8">
+                                    <p class="{{ $labelClass }}" id="extras_label">Anything else you need? <span class="font-normal text-cream/50">(tick all that apply)</span></p>
+                                    <div role="group" aria-labelledby="extras_label" class="mt-3 grid gap-2.5 sm:grid-cols-2">
+                                        @foreach ($extras as $extra)
+                                            <label class="{{ $choiceClass }}">
+                                                <input type="checkbox" name="extras[]" value="{{ $extra }}" class="size-5 shrink-0 accent-gold" @checked(in_array($extra, old('extras', []), true))>
+                                                <span>{{ $extra }}</span>
+                                            </label>
+                                        @endforeach
+                                    </div>
+                                </div>
+
+                                <div class="mt-8">
+                                    <label for="dietary" class="{{ $labelClass }}">Dietary requirements <span class="font-normal text-cream/50">(optional)</span></label>
+                                    <input id="dietary" name="dietary" type="text" value="{{ old('dietary') }}" placeholder="e.g. 20 vegetarian, 4 nut allergies"
+                                           class="{{ $fieldClass }}">
+                                </div>
+
+                                <div class="mt-8">
+                                    <label for="message" class="{{ $labelClass }}">Anything else we should know? <span class="font-normal text-cream/50">(optional)</span></label>
+                                    <textarea id="message" name="message" rows="4"
+                                              class="{{ $fieldClass }} resize-y">{{ old('message') }}</textarea>
+                                </div>
+                            </fieldset>
 
                             {{-- Honeypot: hidden from people, tempting to bots. --}}
                             <div class="sr-only" aria-hidden="true">
@@ -214,28 +188,13 @@
                             </div>
                         </div>
 
-                        <div class="flex flex-wrap items-center justify-between gap-4 border-t border-cream/10 px-6 py-6 sm:px-10">
-                            @if ($stepped)
-                            <button type="button" data-quote-back
-                                    class="group/b inline-flex items-center gap-2.5 text-[0.68rem] font-semibold tracking-[0.2em] text-cream/58 uppercase transition-colors hover:text-cream disabled:pointer-events-none disabled:opacity-25">
-                                <svg viewBox="0 0 24 24" class="size-3.5 transition-transform duration-500 group-hover/b:-translate-x-1" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M11 18l-6-6 6-6" /></svg>
-                                Back
-                            </button>
-
-                            <button type="button" data-quote-next hidden
-                                    class="group/btn inline-flex items-center gap-3 rounded-full bg-gold px-8 py-4 text-[0.7rem] font-bold tracking-[0.2em] text-ink uppercase transition-colors hover:bg-gold-lit">
-                                Continue
-                                <svg viewBox="0 0 24 24" class="size-3.5 transition-transform duration-500 group-hover/btn:translate-x-1" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
-                            </button>
-                            @else
-                                <span></span>
-                            @endif
-
-                            <button type="submit" data-quote-submit
-                                    class="group/btn inline-flex items-center gap-3 rounded-full bg-gold px-8 py-4 text-[0.7rem] font-bold tracking-[0.2em] text-ink uppercase transition-colors hover:bg-gold-lit">
+                        <div class="border-t border-cream/10 px-5 py-7 sm:px-10">
+                            <button type="submit"
+                                    class="group/btn inline-flex min-h-14 w-full items-center justify-center gap-3 rounded-full bg-gold px-8 py-4 text-sm font-bold tracking-[0.2em] text-ink uppercase transition-colors hover:bg-gold-lit sm:w-auto">
                                 Send enquiry
-                                <svg viewBox="0 0 24 24" class="size-3.5 transition-transform duration-500 group-hover/btn:translate-x-1" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
+                                <svg viewBox="0 0 24 24" class="size-4 transition-transform duration-500 group-hover/btn:translate-x-1" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
                             </button>
+                            <p class="mt-4 text-sm text-cream/60">We usually reply within a working day. Prefer to talk? Call <a href="{{ $mc['phone_href'] }}" class="link-underline text-cream">{{ $mc['phone'] }}</a>.</p>
                         </div>
                     </form>
                 @endif

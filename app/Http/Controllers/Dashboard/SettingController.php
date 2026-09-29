@@ -21,6 +21,7 @@ class SettingController extends Controller
      * @var array<string, array{rule: string, type: string, group: string, label: string, hint: string|null, suffix: string|null}>
      */
     private const SCHEMA = [
+        'simple_menu' => ['rule' => 'boolean', 'type' => 'bool', 'group' => 'menu', 'label' => 'Simple menu', 'hint' => 'Hide Purchasing, Suppliers, Waste, Equipment and Activity from the menu', 'suffix' => null],
         'quote_validity_days' => ['rule' => 'integer|min:1|max:120', 'type' => 'int', 'group' => 'sales', 'label' => 'Quote valid for', 'hint' => 'How long a quote stands before it expires', 'suffix' => 'days'],
         'deposit_percent' => ['rule' => 'integer|min:0|max:100', 'type' => 'int', 'group' => 'sales', 'label' => 'Deposit', 'hint' => 'Asked for when a quote is accepted', 'suffix' => '%'],
         'minimum_guests' => ['rule' => 'integer|min:1|max:500', 'type' => 'int', 'group' => 'sales', 'label' => 'Minimum guests', 'hint' => 'For full catering', 'suffix' => null],

@@ -49,6 +49,28 @@
             </div>
 
             <div class="card overflow-hidden">
+                <div class="flex items-center justify-between gap-3 border-b border-line px-5 py-4">
+                    <h2 class="text-sm font-semibold text-text">{{ __('Wages paid') }}</h2>
+                    <a href="{{ route('timesheets') }}" class="text-xs font-semibold text-link hover:underline">{{ __('Pay run') }}</a>
+                </div>
+                @if ($wages->isEmpty())
+                    <p class="px-5 py-8 text-center text-sm text-text-muted">{{ __('No wages recorded yet. Press "Paid in cash" on the pay run.') }}</p>
+                @else
+                    <ul class="divide-y divide-line">
+                        @foreach ($wages as $payment)
+                            <li class="flex items-center justify-between gap-3 px-5 py-3">
+                                <span class="min-w-0">
+                                    <span class="block text-sm font-medium text-text">{{ __('Week of :date', ['date' => $payment->week_start->format('j M Y')]) }}</span>
+                                    <span class="block text-xs text-text-muted">{{ $payment->methodLabel() }} · {{ __('paid :date', ['date' => $payment->paid_on->format('j M Y')]) }}</span>
+                                </span>
+                                <span class="shrink-0 text-sm font-semibold text-text tabular-nums">{{ money($payment->amount) }}</span>
+                            </li>
+                        @endforeach
+                    </ul>
+                @endif
+            </div>
+
+            <div class="card overflow-hidden">
                 <div class="border-b border-line px-5 py-4">
                     <h2 class="text-sm font-semibold text-text">{{ __('Leave') }}</h2>
                 </div>

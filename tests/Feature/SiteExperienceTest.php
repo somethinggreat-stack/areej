@@ -94,20 +94,15 @@ class SiteExperienceTest extends TestCase
             ->assertSee('img/r/karahi-naan-800.webp', false);
     }
 
-    public function test_the_quote_form_has_all_four_steps(): void
+    public function test_the_quote_form_is_a_single_page(): void
     {
-        $response = $this->get('/contact');
-
-        foreach (['Occasion', 'Details', 'Service', 'You'] as $step) {
-            $response->assertSee('data-quote-step="'.$step.'"', false);
-        }
-
-        $response->assertSee('data-quote-next', false)
-            ->assertSee('data-quote-submit', false)
-            ->assertSee('data-has-errors="false"', false);
+        $this->get('/contact')
+            ->assertSee('data-enquiry-form', false)
+            ->assertSee('Send enquiry')
+            ->assertDontSee('data-quote-step', false);
     }
 
-    public function test_a_rejected_enquiry_comes_back_with_every_step_open(): void
+    public function test_a_rejected_enquiry_comes_back_with_every_field_visible(): void
     {
         $response = $this->from('/contact')->post('/contact', [
             'name' => 'Test Person',
@@ -120,13 +115,10 @@ class SiteExperienceTest extends TestCase
             ->from('/contact')
             ->post('/contact', ['name' => 'Test Person']);
 
-        $followUp->assertSee('data-has-errors="true"', false);
-
-        // Every step must be reachable: the JS stands down on an error page, so
-        // a `hidden` attribute here would strand fields the visitor must fix.
-        foreach (['Details', 'Service', 'You'] as $step) {
-            $followUp->assertDontSee('data-quote-step="'.$step.'" hidden', false);
-        }
+        $followUp->assertSee('Please check the following:')
+            ->assertSee('value="Test Person"', false)
+            ->assertSee('name="phone"', false)
+            ->assertSee('name="message"', false);
     }
 
     public function test_the_map_pins_the_verified_location(): void
