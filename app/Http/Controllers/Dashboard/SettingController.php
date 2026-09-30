@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Dashboard;
 use App\Http\Controllers\Controller;
 use App\Models\Setting;
 use App\Services\Activity;
+use App\Support\Menu;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -21,7 +22,6 @@ class SettingController extends Controller
      * @var array<string, array{rule: string, type: string, group: string, label: string, hint: string|null, suffix: string|null}>
      */
     private const SCHEMA = [
-        'simple_menu' => ['rule' => 'boolean', 'type' => 'bool', 'group' => 'menu', 'label' => 'Simple menu', 'hint' => 'Hide Purchasing, Suppliers, Waste, Equipment and Activity from the menu', 'suffix' => null],
         'quote_validity_days' => ['rule' => 'integer|min:1|max:120', 'type' => 'int', 'group' => 'sales', 'label' => 'Quote valid for', 'hint' => 'How long a quote stands before it expires', 'suffix' => 'days'],
         'deposit_percent' => ['rule' => 'integer|min:0|max:100', 'type' => 'int', 'group' => 'sales', 'label' => 'Deposit', 'hint' => 'Asked for when a quote is accepted', 'suffix' => '%'],
         'minimum_guests' => ['rule' => 'integer|min:1|max:500', 'type' => 'int', 'group' => 'sales', 'label' => 'Minimum guests', 'hint' => 'For full catering', 'suffix' => null],
@@ -43,7 +43,11 @@ class SettingController extends Controller
             ->map(fn (array $meta, string $key) => $meta + ['key' => $key, 'value' => Setting::get($key)])
             ->groupBy('group');
 
-        return view('dashboard.settings.index', ['groups' => $groups]);
+        return view('dashboard.settings.index', [
+            'groups' => $groups,
+            'menuChoices' => Menu::choices(),
+            'menuHidden' => Menu::hidden(),
+        ]);
     }
 
     public function update(Request $request): RedirectResponse
@@ -53,8 +57,24 @@ class SettingController extends Controller
             $rules[$key] = 'required|'.$meta['rule'];
         }
 
-        $data = $request->validate($rules);
+        $data = $request->validate($rules + [
+            'menu_shown' => ['array'],
+            'menu_shown.*' => ['string'],
+        ]);
         $changed = [];
+
+        // Unticked boxes are not sent, so what is hidden is every choice not ticked.
+        if ($request->boolean('menu_present')) {
+            $all = array_column(Menu::choices()->flatten(1)->all(), 'route');
+            $hidden = array_values(array_diff($all, $data['menu_shown'] ?? []));
+
+            if ($hidden !== Menu::hidden()) {
+                $changed['menu_hidden'] = ['from' => implode(', ', Menu::hidden()), 'to' => implode(', ', $hidden)];
+                Menu::hide($hidden);
+            }
+        }
+
+        unset($data['menu_shown']);
 
         foreach ($data as $key => $value) {
             $meta = self::SCHEMA[$key];

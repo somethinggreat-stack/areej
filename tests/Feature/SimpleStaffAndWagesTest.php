@@ -184,13 +184,13 @@ class SimpleStaffAndWagesTest extends TestCase
         $this->assertStringContainsString('already has a shift', $skipped[1]);
     }
 
-    public function test_the_simple_menu_hides_the_extra_areas_until_switched_off(): void
+    public function test_the_simple_menu_hides_the_extra_areas_until_switched_on(): void
     {
         $this->actingAs($this->manager)->get('/dashboard')
             ->assertDontSee(route('purchase-orders'), false)
             ->assertDontSee(route('equipment'), false);
 
-        Setting::put('simple_menu', false, 'bool', 'menu');
+        Setting::put('menu_hidden', '', 'string', 'menu');
 
         $this->actingAs($this->manager)->get('/dashboard')
             ->assertSee(route('equipment'), false);
