@@ -180,7 +180,7 @@ class QuoteController extends Controller
             'dish_id' => $dish?->id,
             'description' => ($data['description'] ?? null) ?: $dish?->displayName(),
             'quantity' => $data['quantity'],
-            'unit' => ($data['unit'] ?? null) ?: ($dish ? __('guests') : null),
+            'unit' => ($data['unit'] ?? null) ?: 'portion',
             'unit_price' => (int) round((float) $data['unit_price'] * 100),
             'position' => (int) $quote->lines()->max('position') + 1,
         ]);

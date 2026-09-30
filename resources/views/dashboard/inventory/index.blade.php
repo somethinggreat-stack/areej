@@ -62,7 +62,7 @@
                     </span>
                     <span class="shrink-0 text-end">
                         <span class="block text-sm font-semibold tabular-nums {{ $item->isLowStock() ? 'text-bad' : 'text-text' }}">
-                            {{ qty($item->current_quantity) }} {{ $item->unit }}
+                            {{ qty($item->current_quantity) }} {{ unit_label($item->unit) }}
                         </span>
                         @if ($item->isLowStock())<x-badge tone="bad">{{ __('Low') }}</x-badge>@endif
                     </span>
@@ -84,7 +84,7 @@
                         <td class="px-4 py-3 text-text-muted">{{ $item->category?->displayName() }}</td>
                         <td class="px-4 py-3 text-text-muted">{{ $item->supplier?->name ?? '—' }}</td>
                         <td class="px-4 py-3 text-end tabular-nums {{ $item->isLowStock() ? 'font-semibold text-bad' : 'text-text' }}">
-                            {{ qty($item->current_quantity) }} {{ $item->unit }}
+                            {{ qty($item->current_quantity) }} {{ unit_label($item->unit) }}
                         </td>
                         <td class="px-4 py-3 text-end tabular-nums text-text-faint">{{ qty($item->reorder_level) }}</td>
                         @if ($money)

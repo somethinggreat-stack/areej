@@ -63,7 +63,7 @@
                         @foreach ($order->items as $item)
                             <tr>
                                 <td class="py-2.5">{{ $item->description }}</td>
-                                <td class="py-2.5 text-end tabular-nums">{{ qty($item->quantity, 2) }} {{ $item->unit }}</td>
+                                <td class="py-2.5 text-end tabular-nums">{{ qty($item->quantity, 2) }} {{ unit_label($item->unit) }}</td>
                                 <td class="py-2.5 text-end tabular-nums">£{{ number_format($item->unit_price / 100, 2) }}</td>
                                 <td class="py-2.5 text-end font-medium tabular-nums">£{{ number_format($item->line_total / 100, 2) }}</td>
                             </tr>

@@ -17,7 +17,9 @@
             <div class="grid gap-4 sm:grid-cols-3">
                 <x-field name="course" type="select" :label="__('Course')" required :value="$dish->course"
                          :options="\App\Models\Dish::courseLabels()" />
-                <x-field name="price_per_head" type="number" step="0.01" min="0" prefix="£" :label="__('Price per head')" :value="0" />
+                @if (auth()->user()->canSeeFinancials())
+                    <x-field name="price_per_head" type="number" step="0.01" min="0" prefix="£" :label="__('Price per head')" :value="0" />
+                @endif
                 <x-field name="portion_grams" type="number" min="10" suffix="g" :label="__('Portion size')" :value="$dish->portion_grams" required
                          :hint="__('Used to sanity-check quantities')" />
             </div>

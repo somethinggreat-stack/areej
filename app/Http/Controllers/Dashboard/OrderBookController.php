@@ -21,9 +21,6 @@ use Illuminate\View\View;
  */
 class OrderBookController extends Controller
 {
-    /** Units the kitchen counts in. */
-    public const UNITS = ['kg' => 'KG', 'portion' => 'Portion', 'pieces' => 'Pieces', 'number' => 'Number'];
-
     /** How many empty item rows a new order starts with. */
     private const BLANK_ROWS = 6;
 
@@ -39,7 +36,7 @@ class OrderBookController extends Controller
         return view('dashboard.order-book.form', [
             'order' => $order,
             'rows' => array_fill(0, self::BLANK_ROWS, ['description' => '', 'quantity' => '', 'unit' => 'portion', 'price' => '']),
-            'units' => self::UNITS,
+            'units' => catering_units(),
             'recent' => Order::with('payments')->latest('id')->limit(8)->get(),
         ]);
     }
@@ -80,7 +77,7 @@ class OrderBookController extends Controller
         $rows = $order->items->map(fn ($item) => [
             'description' => $item->description,
             'quantity' => $item->quantity === null ? '' : rtrim(rtrim((string) $item->quantity, '0'), '.'),
-            'unit' => array_key_exists((string) $item->unit, self::UNITS) ? $item->unit : ($item->unit ?: 'portion'),
+            'unit' => array_key_exists((string) $item->unit, catering_units()) ? $item->unit : ($item->unit ?: 'portion'),
             'price' => $item->unit_price ? number_format($item->unit_price / 100, 2, '.', '') : '',
         ])->all();
 
@@ -90,7 +87,7 @@ class OrderBookController extends Controller
         return view('dashboard.order-book.form', [
             'order' => $order,
             'rows' => $rows,
-            'units' => self::UNITS,
+            'units' => catering_units(),
             'recent' => collect(),
         ]);
     }

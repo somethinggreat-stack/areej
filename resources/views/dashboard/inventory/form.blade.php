@@ -25,7 +25,15 @@
             </div>
 
             <div class="grid gap-4 sm:grid-cols-3">
-                <x-field name="unit" :label="__('Unit')" :value="$item->unit" required :hint="__('kg, litres, boxes')" />
+                @php
+                    $unitOptions = catering_units(true);
+                    // Keep a unit typed before the fixed list existed, so editing never changes it.
+                    if ($item->unit && ! array_key_exists(mb_strtolower($item->unit), $unitOptions)) {
+                        $unitOptions = [$item->unit => $item->unit] + $unitOptions;
+                    }
+                @endphp
+                <x-field name="unit" type="select" :label="__('Unit')" :value="$item->unit ? (array_key_exists(mb_strtolower($item->unit), catering_units(true)) ? mb_strtolower($item->unit) : $item->unit) : 'kg'" required
+                         :options="$unitOptions" />
                 <x-field name="sku" :label="__('Code')" :value="$item->sku" />
                 <x-field name="count_frequency" type="select" :label="__('Count how often')" required
                          :value="$item->count_frequency"
@@ -52,7 +60,7 @@
 
             @if (auth()->user()->canSeeFinancials())
                 <x-field name="unit_cost" type="number" step="0.01" min="0" suffix="£"
-                         :label="__('Cost per :unit', ['unit' => $item->unit ?: __('unit')])"
+                         :label="__('Cost per :unit', ['unit' => unit_label($item->unit) ?: __('unit')])"
                          :value="$item->unit_cost" />
             @endif
 

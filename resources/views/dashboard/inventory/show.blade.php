@@ -15,7 +15,7 @@
         <div class="card p-5">
             <p class="label-sm">{{ __('On hand') }}</p>
             <p class="mt-2 text-3xl font-semibold tabular-nums {{ $item->isLowStock() ? 'text-bad' : 'text-text' }}">
-                {{ qty($item->current_quantity) }}<span class="ml-1 text-base font-medium text-text-faint">{{ $item->unit }}</span>
+                {{ qty($item->current_quantity) }}<span class="ml-1 text-base font-medium text-text-faint">{{ unit_label($item->unit) }}</span>
             </p>
             @if ($item->isLowStock())
                 <p class="mt-1 text-xs font-medium text-bad">{{ __('At or below the reorder level') }}</p>
@@ -37,7 +37,7 @@
             <div class="card p-5">
                 <p class="label-sm">{{ __('Stock value') }}</p>
                 <p class="mt-2 text-3xl font-semibold text-text tabular-nums">£{{ number_format($item->stockValue(), 2) }}</p>
-                <p class="mt-1 text-xs text-text-faint">£{{ number_format((float) $item->unit_cost, 2) }} / {{ $item->unit }}</p>
+                <p class="mt-1 text-xs text-text-faint">£{{ number_format((float) $item->unit_cost, 2) }} / {{ unit_label($item->unit) }}</p>
             </div>
         @endif
     </div>
@@ -52,7 +52,7 @@
             <div class="mt-4 flex flex-wrap items-end gap-3">
                 <div class="w-40">
                     <x-field name="quantity_change" type="number" step="0.001"
-                             :label="__('Change by')" :suffix="$item->unit"
+                             :label="__('Change by')" :suffix="unit_label($item->unit)"
                              :hint="__('Use a minus to take away')" />
                 </div>
                 <div class="min-w-[14rem] flex-1">

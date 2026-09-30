@@ -73,7 +73,7 @@
             <p class="text-xs text-text-muted">{{ __('This takes the stock off the shelf as well as recording the reason.') }}</p>
 
             <x-field name="inventory_item_id" type="select" :label="__('Item')" required
-                     :options="$items->mapWithKeys(fn ($i) => [$i->id => $i->displayName() . ' (' . qty($i->current_quantity) . ' ' . $i->unit . ')'])->all()" />
+                     :options="$items->mapWithKeys(fn ($i) => [$i->id => $i->displayName() . ' (' . qty($i->current_quantity) . ' ' . unit_label($i->unit) . ')'])->all()" />
             <x-field name="quantity" type="number" step="0.001" min="0" :label="__('How much')" required />
             <x-field name="reason" type="select" :label="__('Reason')" required
                      :options="\App\Models\WasteLog::reasonLabels()" />

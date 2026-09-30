@@ -100,7 +100,7 @@
                                 <a href="{{ route('inventory.show', $item) }}" class="tap flex items-center justify-between gap-3 px-5 py-2.5 transition-colors hover:bg-surface-2">
                                     <span class="min-w-0 truncate text-sm text-text">{{ $item->displayName() }}</span>
                                     <span class="shrink-0 text-sm tabular-nums {{ $item->isLowStock() ? 'font-semibold text-bad' : 'text-text-muted' }}">
-                                        {{ qty($item->current_quantity) }} {{ $item->unit }}
+                                        {{ qty($item->current_quantity) }} {{ unit_label($item->unit) }}
                                     </span>
                                 </a>
                             </li>

@@ -54,7 +54,7 @@
                                 <p class="text-xs text-text-muted">
                                     {{ __('System says :n :unit', [
                                         'n' => qty($line->expected_quantity),
-                                        'unit' => $line->item->unit,
+                                        'unit' => unit_label($line->item->unit),
                                     ]) }}
                                     @if ($line->isCounted() && $line->variance() != 0)
                                         · <span class="font-semibold {{ $line->variance() > 0 ? 'text-good' : 'text-bad' }}">

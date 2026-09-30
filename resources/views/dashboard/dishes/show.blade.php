@@ -12,6 +12,7 @@
     <x-page-head :title="$dish->displayName()" :back="route('dishes')" :backLabel="__('Menu')"
                  :subtitle="$dish->courseLabel()" />
 
+    @if (auth()->user()->canSeeFinancials())
     <div class="mb-5 grid gap-4 sm:grid-cols-3">
         <x-stat :label="__('Sells for')" :value="'£'.number_format($dish->priceInPounds(), 2)" :hint="__('per head')" />
         <x-stat :label="__('Ingredients cost')"
@@ -22,6 +23,7 @@
                 :tone="$margin === null ? 'neutral' : ($margin < 40 ? 'warn' : 'good')"
                 :hint="$margin === null ? __('Needs a recipe and a price') : null" />
     </div>
+    @endif
 
     <div class="grid gap-6 lg:grid-cols-[1fr_20rem]">
         {{-- ------------------------------------------------------- recipe --}}
@@ -86,7 +88,7 @@
                   class="flex flex-wrap items-end gap-3 border-t border-line p-5">
                 @csrf
                 <x-field name="inventory_item_id" type="select" :label="__('Ingredient')" required class="min-w-[12rem] flex-1"
-                         :options="$items->mapWithKeys(fn ($i) => [$i->id => $i->displayName().' ('.$i->unit.')'])->all()" />
+                         :options="$items->mapWithKeys(fn ($i) => [$i->id => $i->displayName().' ('.unit_label($i->unit).')'])->all()" />
                 <x-field name="quantity_per_100" type="number" step="0.001" min="0" :label="__('Per 100 guests')" required class="w-36" />
                 <x-btn type="submit" variant="secondary" icon="plus">{{ __('Add') }}</x-btn>
             </form>
@@ -103,8 +105,10 @@
                 <x-field name="name_ur" :label="__('Name (Urdu)')" :value="$dish->name_ur" dir="rtl" />
                 <x-field name="course" type="select" :label="__('Course')" required :value="$dish->course"
                          :options="\App\Models\Dish::courseLabels()" />
-                <x-field name="price_per_head" type="number" step="0.01" min="0" prefix="£" :label="__('Price per head')"
-                         :value="$dish->priceInPounds()" />
+                @if (auth()->user()->canSeeFinancials())
+                    <x-field name="price_per_head" type="number" step="0.01" min="0" prefix="£" :label="__('Price per head')"
+                             :value="$dish->priceInPounds()" />
+                @endif
                 <x-field name="portion_grams" type="number" min="10" suffix="g" :label="__('Portion size')" :value="$dish->portion_grams" required />
                 <x-field name="description" type="textarea" :rows="2" :label="__('Description')" :value="$dish->description" />
 

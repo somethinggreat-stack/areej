@@ -78,7 +78,7 @@ class InventoryTest extends TestCase
 
         $this->actingAs($this->manager)
             ->get('/dashboard/inventory')
-            ->assertSee('100 kg');
+            ->assertSee('100 KG');
     }
 
     public function test_stock_only_moves_through_the_ledger(): void

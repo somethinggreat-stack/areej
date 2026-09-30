@@ -83,7 +83,7 @@
                                     <td class="px-2 py-2">
                                         <select name="items[{{ $i }}][unit]" aria-label="{{ __('Unit') }}" class="{{ $inputClass }}">
                                             @foreach ($units as $value => $label)
-                                                <option value="{{ $value }}" @selected(($row['unit'] ?? 'portion') === $value)>{{ __($label) }}</option>
+                                                <option value="{{ $value }}" @selected(($row['unit'] ?? 'portion') === $value)>{{ $label }}</option>
                                             @endforeach
                                         </select>
                                     </td>

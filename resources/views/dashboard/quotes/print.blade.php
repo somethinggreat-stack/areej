@@ -74,7 +74,7 @@
                     @foreach ($quote->lines as $line)
                         <tr>
                             <td class="py-2.5">{{ $line->description }}</td>
-                            <td class="py-2.5 text-end tabular-nums">{{ qty($line->quantity, 2) }} {{ $line->unit }}</td>
+                            <td class="py-2.5 text-end tabular-nums">{{ qty($line->quantity, 2) }} {{ unit_label($line->unit) }}</td>
                             <td class="py-2.5 text-end tabular-nums">£{{ number_format($line->unit_price / 100, 2) }}</td>
                             <td class="py-2.5 text-end font-medium tabular-nums">£{{ number_format($line->line_total / 100, 2) }}</td>
                         </tr>

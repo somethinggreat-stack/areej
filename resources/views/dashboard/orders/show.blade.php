@@ -252,7 +252,7 @@
                                     <span class="min-w-0">
                                         <span class="block truncate text-sm font-medium text-text">{{ $item->description }}</span>
                                         <span class="block text-xs text-text-muted tabular-nums">
-                                            {{ qty($item->quantity, 2) }} {{ $item->unit }} × £{{ number_format($item->unitPriceInPounds(), 2) }}
+                                            {{ qty($item->quantity, 2) }} {{ unit_label($item->unit) }} × £{{ number_format($item->unitPriceInPounds(), 2) }}
                                         </span>
                                     </span>
                                     <span class="flex shrink-0 items-center gap-3">

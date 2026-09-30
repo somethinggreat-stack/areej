@@ -56,14 +56,16 @@
 
                     <div class="mt-3 flex items-end justify-between gap-3">
                         <div>
-                            <p class="text-lg font-semibold text-text tabular-nums">£{{ number_format($dish->priceInPounds(), 2) }}</p>
-                            <p class="text-[0.68rem] text-text-faint">{{ __('per head') }}</p>
+                            @if (auth()->user()->canSeeFinancials())
+                                <p class="text-lg font-semibold text-text tabular-nums">£{{ number_format($dish->priceInPounds(), 2) }}</p>
+                                <p class="text-[0.68rem] text-text-faint">{{ __('per head') }}</p>
+                            @endif
                         </div>
 
                         <div class="text-end">
                             @if ($dish->ingredients_count === 0)
                                 <x-badge tone="warn">{{ __('No recipe') }}</x-badge>
-                            @elseif ($margin !== null)
+                            @elseif ($margin !== null && auth()->user()->canSeeFinancials())
                                 <p class="text-sm font-semibold tabular-nums {{ $margin < 40 ? 'text-warn' : 'text-good' }}">{{ $margin }}%</p>
                                 <p class="text-[0.68rem] text-text-faint">{{ __('margin') }}</p>
                             @else

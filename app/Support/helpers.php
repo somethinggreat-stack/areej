@@ -57,3 +57,33 @@ if (! function_exists('vat_breakdown')) {
         return ['rate' => $rate, 'net' => $grossPence - $vat, 'vat' => $vat];
     }
 }
+
+if (! function_exists('catering_units')) {
+    /**
+     * The units the business counts in. Orders and quotes use the first four
+     * the client asked for; stock also needs litres and boxes.
+     *
+     * @return array<string, string>
+     */
+    function catering_units(bool $forStock = false): array
+    {
+        $units = ['kg' => __('KG'), 'portion' => __('Portion'), 'pieces' => __('Pieces'), 'number' => __('Number')];
+
+        return $forStock ? $units + ['litres' => __('Litres'), 'boxes' => __('Boxes')] : $units;
+    }
+}
+
+if (! function_exists('unit_label')) {
+    /**
+     * The word to show for a stored unit. Anything typed before the fixed list
+     * existed ("trays", "bags") is shown as it was written.
+     */
+    function unit_label(?string $unit): string
+    {
+        if ($unit === null || $unit === '') {
+            return '';
+        }
+
+        return catering_units(true)[mb_strtolower($unit)] ?? $unit;
+    }
+}

@@ -153,7 +153,14 @@ class DishController extends Controller
             'sort_order' => ['nullable', 'integer', 'min:0', 'max:999'],
         ]);
 
-        $data['price_per_head'] = (int) round((float) ($data['price_per_head'] ?? 0) * 100);
+        // The price box is only on the form for management and the owner; for
+        // anyone else it is left out, so saving a dish never wipes its price.
+        if ($request->user()->canSeeFinancials()) {
+            $data['price_per_head'] = (int) round((float) ($data['price_per_head'] ?? 0) * 100);
+        } else {
+            unset($data['price_per_head']);
+        }
+
         $data['sort_order'] = (int) ($data['sort_order'] ?? 0);
 
         return $data;

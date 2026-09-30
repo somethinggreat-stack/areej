@@ -24,7 +24,7 @@
                             <div class="min-w-0 flex-1">
                                 <p class="text-sm font-semibold text-text">{{ $line->item->displayName() }}</p>
                                 <p class="text-xs text-text-muted">
-                                    {{ __('Ordered :n :unit', ['n' => qty($line->quantity_ordered), 'unit' => $line->item->unit]) }}
+                                    {{ __('Ordered :n :unit', ['n' => qty($line->quantity_ordered), 'unit' => unit_label($line->item->unit)]) }}
                                     · {{ __('received :n', ['n' => qty($line->quantity_received)]) }}
                                     @if ($line->outstanding() > 0)
                                         · <span class="font-semibold text-warn">{{ __(':n outstanding', ['n' => qty($line->outstanding())]) }}</span>
@@ -42,7 +42,7 @@
                                     </div>
                                     @if (auth()->user()->canSeeFinancials())
                                         <div class="w-24">
-                                            <label class="block text-[0.68rem] font-semibold text-text-muted" for="cost-{{ $line->id }}">{{ __('£ / :unit', ['unit' => $line->item->unit]) }}</label>
+                                            <label class="block text-[0.68rem] font-semibold text-text-muted" for="cost-{{ $line->id }}">{{ __('£ / :unit', ['unit' => unit_label($line->item->unit)]) }}</label>
                                             <input id="cost-{{ $line->id }}" type="number" step="0.01" min="0" inputmode="decimal"
                                                    name="lines[{{ $index }}][unit_cost]" value="{{ $line->unit_cost }}"
                                                    class="tap mt-1 w-full rounded-lg border border-line-strong px-3 py-2 text-end text-sm tabular-nums outline-none focus:border-gold focus:ring-2 focus:ring-gold/30">

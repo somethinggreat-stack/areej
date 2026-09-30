@@ -34,7 +34,7 @@
                                     <span class="block text-xs text-bad">
                                         {{ __(':have :unit left, reorder at :level', [
                                             'have' => qty($item->current_quantity),
-                                            'unit' => $item->unit,
+                                            'unit' => unit_label($item->unit),
                                             'level' => qty($item->reorder_level),
                                         ]) }}
                                     </span>
@@ -46,7 +46,7 @@
                                            value="{{ qty($item->suggestedOrderQuantity()) }}"
                                            class="tap w-full rounded-lg border border-line-strong px-3 py-2 text-end text-sm tabular-nums outline-none focus:border-gold focus:ring-2 focus:ring-gold/30">
                                 </span>
-                                <span class="w-20 text-xs text-text-faint">{{ $item->unit }}</span>
+                                <span class="w-20 text-xs text-text-faint">{{ unit_label($item->unit) }}</span>
                             </li>
                         @endforeach
                     </ul>

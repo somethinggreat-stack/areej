@@ -55,7 +55,7 @@
                                 <span class="min-w-0">
                                     <span class="block truncate text-sm font-medium text-text">{{ $line->description }}</span>
                                     <span class="block text-xs text-text-muted tabular-nums">
-                                        {{ qty($line->quantity, 2) }} {{ $line->unit }} × £{{ number_format($line->unit_price / 100, 2) }}
+                                        {{ qty($line->quantity, 2) }} {{ unit_label($line->unit) }} × £{{ number_format($line->unit_price / 100, 2) }}
                                     </span>
                                 </span>
                                 <span class="flex shrink-0 items-center gap-3">
@@ -115,6 +115,8 @@
                                  placeholder="{{ __('Waiting staff, 4 hours') }}" />
                         <x-field name="quantity" type="number" step="0.01" min="0" :label="__('Qty')" :value="$quote->guests"
                                  class="w-24" data-line-qty required />
+                        <x-field name="unit" type="select" :label="__('Unit')" value="portion" class="w-32"
+                                 :options="catering_units()" />
                         <x-field name="unit_price" type="number" step="0.01" min="0" prefix="£" :label="__('Each')" :value="0"
                                  class="w-28" data-line-price required />
                         <div class="pb-2 text-sm font-semibold text-text-muted">
