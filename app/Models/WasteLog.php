@@ -12,7 +12,7 @@ class WasteLog extends Model
     use SoftDeletes;
 
     protected $fillable = [
-        'inventory_item_id', 'order_id', 'quantity', 'reason',
+        'type', 'inventory_item_id', 'description', 'order_id', 'quantity', 'unit', 'reason',
         'unit_cost', 'wasted_on', 'logged_by', 'notes',
     ];
 
@@ -52,6 +52,57 @@ class WasteLog extends Model
     public function cost(): float
     {
         return (float) $this->quantity * (float) ($this->unit_cost ?? 0);
+    }
+
+    /**
+     * The simple sort the client asked for. Kept short on purpose: one glance
+     * at the waste page should say where the money is going in the bin.
+     *
+     * @return array<string, string>
+     */
+    public static function typeLabels(): array
+    {
+        return [
+            'fresh_produce' => __('Fresh produce'),
+            'meat_poultry' => __('Meat & poultry'),
+            'dairy' => __('Dairy'),
+            'dry_goods' => __('Dry goods'),
+            'cooked_food' => __('Cooked food'),
+            'other' => __('Other'),
+        ];
+    }
+
+    /**
+     * A best guess from the stock category, used when the type is left blank.
+     */
+    public static function typeFor(?InventoryItem $item): string
+    {
+        return match ($item?->category?->slug) {
+            'meat-poultry', 'fish' => 'meat_poultry',
+            'vegetables' => 'fresh_produce',
+            'dairy' => 'dairy',
+            'rice-grains', 'flour-bread', 'lentils-pulses', 'spices', 'oil-ghee', 'dessert-ingredients', 'tea-drinks' => 'dry_goods',
+            default => 'other',
+        };
+    }
+
+    public function typeLabel(): string
+    {
+        return self::typeLabels()[$this->type] ?? $this->type;
+    }
+
+    /**
+     * The stock item's name, or what was written in for waste that is not a
+     * stock item (leftover cooked food).
+     */
+    public function itemName(): string
+    {
+        return $this->item?->displayName() ?? (string) $this->description;
+    }
+
+    public function unitLabel(): string
+    {
+        return unit_label($this->item?->unit ?? $this->unit);
     }
 
     /** @return array<string, string> */

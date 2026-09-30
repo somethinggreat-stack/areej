@@ -14,7 +14,7 @@
             <div class="max-w-xl">
                 <h2 class="text-base font-semibold text-text">{{ __('Download everything') }}</h2>
                 <p class="mt-1 text-sm leading-relaxed text-text-muted">
-                    {{ __('One zip file with every order, item, payment, customer, member of staff, shift, wage and stock item, as Excel sheets. Save it on the office computer and on a USB stick or Google Drive.') }}
+                    {{ __('One zip file with every order, item, payment, customer, member of staff, shift, wage, stock item and waste entry, as Excel sheets. Save it on the office computer and on a USB stick or Google Drive.') }}
                 </p>
                 <p class="mt-3 text-sm font-semibold {{ $stale ? 'text-warn' : 'text-good' }}">
                     @if ($lastBackup)

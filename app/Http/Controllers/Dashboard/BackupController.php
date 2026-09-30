@@ -8,6 +8,7 @@ use App\Models\OrderPayment;
 use App\Models\Setting;
 use App\Models\StaffProfile;
 use App\Models\WagePayment;
+use App\Models\WasteLog;
 use App\Services\Activity;
 use App\Services\CsvFile;
 use DateTimeImmutable;
@@ -44,6 +45,9 @@ class BackupController extends Controller
 
     /** @var list<string> */
     public const CUSTOMER_COLUMNS = ['Customer', 'Phone', 'Orders', 'Total', 'Paid', 'Still owed', 'Last order'];
+
+    /** @var list<string> */
+    public const WASTE_COLUMNS = ['Date', 'Type', 'Item', 'Quantity', 'Unit', 'Reason', 'Order', 'Notes'];
 
     public function __construct(
         private readonly CsvFile $csv,
@@ -181,6 +185,16 @@ class BackupController extends Controller
             'shifts.csv' => [ExcelExportController::SHIFT_COLUMNS, $this->sheets->shiftRows()],
             'wages.csv' => [ExcelExportController::WAGE_COLUMNS, $this->sheets->wageRows()],
             'stock.csv' => [ExcelExportController::STOCK_COLUMNS, $this->sheets->stockRows()],
+            'waste.csv' => [self::WASTE_COLUMNS, WasteLog::with(['item', 'order'])->orderBy('wasted_on')->get()->map(fn (WasteLog $w): array => [
+                $w->wasted_on->format('Y-m-d'),
+                $w->typeLabel(),
+                $w->item?->name_en ?? $w->description,
+                qty($w->quantity),
+                $w->unitLabel(),
+                $w->reasonLabel(),
+                $w->order?->reference,
+                $w->notes,
+            ])],
         ];
     }
 
@@ -194,7 +208,7 @@ class BackupController extends Controller
             '  order-items.csv  what was on each order (matched by Reference)',
             '  payments.csv     every payment taken, by order',
             '  customers.csv    each customer and their balance',
-            '  staff.csv, shifts.csv, wages.csv, stock.csv',
+            '  staff.csv, shifts.csv, wages.csv, stock.csv, waste.csv',
             '',
             'To put records back: Dashboard > Backup > Restore from a backup, and upload this zip as it is.',
             'Orders, payments and wages that are missing are added. Nothing already there is changed.',

@@ -208,15 +208,16 @@ class ReportController extends Controller
         $rows = WasteLog::whereBetween('wasted_on', [$from, $to])->with(['item', 'order'])->orderBy('wasted_on')->get()
             ->map(fn (WasteLog $w) => [
                 $w->wasted_on->format('Y-m-d'),
-                $w->item?->name_en,
+                $w->typeLabel(),
+                $w->item?->name_en ?? $w->description,
                 qty($w->quantity),
-                $w->item?->unit,
+                $w->unitLabel(),
                 $w->reasonLabel(),
                 number_format($w->cost(), 2, '.', ''),
                 $w->order?->reference,
             ]);
 
-        return [['Date', 'Item', 'Quantity', 'Unit', 'Reason', 'Cost', 'Job'], $rows];
+        return [['Date', 'Type', 'Item', 'Quantity', 'Unit', 'Reason', 'Cost', 'Job'], $rows];
     }
 
     private function exportStock(): array

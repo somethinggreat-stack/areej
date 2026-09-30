@@ -90,7 +90,7 @@ class BackupTest extends TestCase
         $response = $this->actingAs($this->manager)->get('/dashboard/backup/download')->assertOk();
         $files = $this->unzip($response);
 
-        foreach (['orders.csv', 'order-items.csv', 'payments.csv', 'customers.csv', 'staff.csv', 'shifts.csv', 'wages.csv', 'stock.csv', 'READ ME.txt'] as $name) {
+        foreach (['orders.csv', 'order-items.csv', 'payments.csv', 'customers.csv', 'staff.csv', 'shifts.csv', 'wages.csv', 'stock.csv', 'waste.csv', 'READ ME.txt'] as $name) {
             $this->assertArrayHasKey($name, $files);
         }
 
