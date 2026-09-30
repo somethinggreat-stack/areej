@@ -41,6 +41,30 @@ class CsvFile
     }
 
     /**
+     * The same sheet as a string, for putting inside a backup zip.
+     *
+     * @param  list<string>  $headers
+     * @param  iterable<int, array<int, mixed>>  $rows
+     */
+    public function toString(array $headers, iterable $rows): string
+    {
+        $out = fopen('php://temp', 'w+b');
+
+        fwrite($out, self::BOM);
+        fputcsv($out, $headers);
+
+        foreach ($rows as $row) {
+            fputcsv($out, array_map(fn (mixed $cell): mixed => $this->guard($cell), $row));
+        }
+
+        rewind($out);
+        $contents = (string) stream_get_contents($out);
+        fclose($out);
+
+        return $contents;
+    }
+
+    /**
      * Read an uploaded sheet into rows keyed by their normalised header, with
      * the spreadsheet row number (header is row 1) as the key so a skipped row
      * can be pointed at exactly.
@@ -49,8 +73,14 @@ class CsvFile
      */
     public function read(UploadedFile $file): array
     {
-        $contents = (string) file_get_contents($file->getRealPath());
+        return $this->readString((string) file_get_contents($file->getRealPath()));
+    }
 
+    /**
+     * @return array{headers: list<string>, rows: array<int, array<string, string>>}
+     */
+    public function readString(string $contents): array
+    {
         if (str_starts_with($contents, self::BOM)) {
             $contents = substr($contents, strlen(self::BOM));
         }

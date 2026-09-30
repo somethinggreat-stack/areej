@@ -61,6 +61,7 @@
             'label' => __('System'),
             'items' => [
                 ['route' => 'users', 'icon' => 'key', 'label' => __('Logins'), 'level' => 80],
+                ['route' => 'backup', 'icon' => 'download', 'label' => __('Backup'), 'level' => 80],
                 ['route' => 'activity', 'icon' => 'activity', 'label' => __('Activity'), 'level' => 80, 'advanced' => true],
                 ['route' => 'settings', 'icon' => 'settings', 'label' => __('Settings'), 'level' => 100],
             ],

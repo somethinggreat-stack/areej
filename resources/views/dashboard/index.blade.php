@@ -15,6 +15,9 @@
             <div class="flex flex-wrap gap-2">
                 <x-btn size="sm" icon="plus" :href="route('order-book.create', ['date' => $lastWeek->toDateString()])">{{ __('Enter orders') }}</x-btn>
                 <x-btn size="sm" variant="secondary" :href="route('weekly-summary', ['week' => $lastWeek->toDateString()])">{{ __('Last week\'s summary') }}</x-btn>
+                @if (auth()->user()->hasRoleLevel(80))
+                    <x-btn size="sm" variant="ghost" icon="download" :href="route('backup')">{{ __('Backup') }}</x-btn>
+                @endif
             </div>
         </section>
     @endif

@@ -23,7 +23,7 @@ class CustomerController extends Controller
         $filter = $request->string('filter')->toString();
         $term = mb_strtolower(trim($request->string('q')->toString()));
 
-        $customers = $this->customers()
+        $customers = self::customers()
             ->when($filter === 'owing', fn (Collection $c) => $c->filter(fn (array $row) => $row['owed'] > 0))
             ->when($filter === 'paid', fn (Collection $c) => $c->filter(fn (array $row) => $row['owed'] === 0 && $row['total'] > 0))
             ->when($term !== '', fn (Collection $c) => $c->filter(fn (array $row) => str_contains(mb_strtolower($row['name'].' '.$row['phone']), $term)))
@@ -75,7 +75,7 @@ class CustomerController extends Controller
     /**
      * @return Collection<int, array{key: string, name: string, phone: ?string, orders: int, total: int, paid: int, owed: int, last: CarbonInterface}>
      */
-    private function customers(): Collection
+    public static function customers(): Collection
     {
         return Order::with('payments')
             ->where('status', '!=', 'cancelled')

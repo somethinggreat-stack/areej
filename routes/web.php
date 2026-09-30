@@ -3,6 +3,7 @@
 use App\Http\Controllers\Dashboard\AccountController;
 use App\Http\Controllers\Dashboard\ActivityController;
 use App\Http\Controllers\Dashboard\AttendanceController;
+use App\Http\Controllers\Dashboard\BackupController;
 use App\Http\Controllers\Dashboard\CalendarController;
 use App\Http\Controllers\Dashboard\CustomerController;
 use App\Http\Controllers\Dashboard\DishController;
@@ -292,6 +293,10 @@ Route::middleware(['auth', 'active'])->prefix('dashboard')->group(function (): v
         Route::get('excel/stock/template', [ExcelImportController::class, 'stockTemplate'])->name('excel.stock.template');
         Route::post('excel/staff/import', [ExcelImportController::class, 'staff'])->name('excel.staff.import');
         Route::post('excel/stock/import', [ExcelImportController::class, 'stock'])->name('excel.stock.import');
+
+        Route::get('backup', [BackupController::class, 'index'])->name('backup');
+        Route::get('backup/download', [BackupController::class, 'download'])->name('backup.download');
+        Route::post('backup/restore', [BackupController::class, 'restore'])->name('backup.restore');
     });
 
     /* --------------------------------------------------------- settings */

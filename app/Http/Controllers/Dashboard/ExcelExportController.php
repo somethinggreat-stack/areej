@@ -11,6 +11,7 @@ use App\Services\CsvFile;
 use App\Services\Timesheet;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 /**
@@ -68,7 +69,15 @@ class ExcelExportController extends Controller
 
     public function staff(): StreamedResponse
     {
-        $rows = StaffProfile::orderBy('full_name')->get()
+        return $this->csv->download($this->filename('staff'), self::STAFF_COLUMNS, $this->staffRows());
+    }
+
+    /**
+     * @return Collection<int, list<mixed>>
+     */
+    public function staffRows(): Collection
+    {
+        return StaffProfile::orderBy('full_name')->get()
             ->map(fn (StaffProfile $s): array => [
                 $s->full_name,
                 $s->phone,
@@ -80,13 +89,19 @@ class ExcelExportController extends Controller
                 $s->started_on?->format('Y-m-d'),
                 $s->is_active ? 'Yes' : 'No',
             ]);
-
-        return $this->csv->download($this->filename('staff'), self::STAFF_COLUMNS, $rows);
     }
 
     public function stock(): StreamedResponse
     {
-        $rows = InventoryItem::with(['category', 'supplier'])->orderBy('name_en')->get()
+        return $this->csv->download($this->filename('stock'), self::STOCK_COLUMNS, $this->stockRows());
+    }
+
+    /**
+     * @return Collection<int, list<mixed>>
+     */
+    public function stockRows(): Collection
+    {
+        return InventoryItem::with(['category', 'supplier'])->orderBy('name_en')->get()
             ->map(fn (InventoryItem $i): array => [
                 $i->name_en,
                 $i->name_ur,
@@ -101,8 +116,6 @@ class ExcelExportController extends Controller
                 self::COUNT_FREQUENCIES[$i->count_frequency] ?? $i->count_frequency,
                 $i->is_active ? 'Yes' : 'No',
             ]);
-
-        return $this->csv->download($this->filename('stock'), self::STOCK_COLUMNS, $rows);
     }
 
     /**
@@ -122,13 +135,25 @@ class ExcelExportController extends Controller
             ? CarbonImmutable::parse($request->string('to')->toString())
             : $from->addDays(6);
 
-        $rows = AttendanceRecord::query()
+        $filename = sprintf('midland-shifts-%s-to-%s.csv', $from->format('Y-m-d'), $to->format('Y-m-d'));
+
+        return $this->csv->download($filename, self::SHIFT_COLUMNS, $this->shiftRows($from, $to));
+    }
+
+    /**
+     * Shifts between two dates, or every shift when no dates are given.
+     *
+     * @return Collection<int, list<mixed>>
+     */
+    public function shiftRows(?CarbonImmutable $from = null, ?CarbonImmutable $to = null): Collection
+    {
+        return AttendanceRecord::query()
             ->with([
                 'staff' => fn ($q) => $q->withTrashed(),
                 'order',
             ])
-            ->whereDate('worked_on', '>=', $from->toDateString())
-            ->whereDate('worked_on', '<=', $to->toDateString())
+            ->when($from, fn ($q) => $q->whereDate('worked_on', '>=', $from->toDateString()))
+            ->when($to, fn ($q) => $q->whereDate('worked_on', '<=', $to->toDateString()))
             ->orderBy('worked_on')
             ->orderBy('scheduled_start_at')
             ->orderBy('clock_in_at')
@@ -144,10 +169,6 @@ class ExcelExportController extends Controller
                 number_format($r->paidHours(), 2, '.', ''),
                 $r->statusLabel(),
             ]);
-
-        $filename = sprintf('midland-shifts-%s-to-%s.csv', $from->format('Y-m-d'), $to->format('Y-m-d'));
-
-        return $this->csv->download($filename, self::SHIFT_COLUMNS, $rows);
     }
 
     /**
@@ -167,10 +188,22 @@ class ExcelExportController extends Controller
             ? CarbonImmutable::parse($request->string('to')->toString())
             : $from->endOfMonth();
 
-        $rows = WagePayment::query()
+        $filename = sprintf('midland-wages-%s-to-%s.csv', $from->format('Y-m-d'), $to->format('Y-m-d'));
+
+        return $this->csv->download($filename, self::WAGE_COLUMNS, $this->wageRows($from, $to));
+    }
+
+    /**
+     * Wages between two week starts, or every wage paid when no dates are given.
+     *
+     * @return Collection<int, list<mixed>>
+     */
+    public function wageRows(?CarbonImmutable $from = null, ?CarbonImmutable $to = null): Collection
+    {
+        return WagePayment::query()
             ->with('staff')
-            ->whereDate('week_start', '>=', $from->toDateString())
-            ->whereDate('week_start', '<=', $to->toDateString())
+            ->when($from, fn ($q) => $q->whereDate('week_start', '>=', $from->toDateString()))
+            ->when($to, fn ($q) => $q->whereDate('week_start', '<=', $to->toDateString()))
             ->orderBy('week_start')
             ->orderBy('id')
             ->get()
@@ -182,10 +215,6 @@ class ExcelExportController extends Controller
                 $p->paid_on->format('Y-m-d'),
                 $p->notes,
             ]);
-
-        $filename = sprintf('midland-wages-%s-to-%s.csv', $from->format('Y-m-d'), $to->format('Y-m-d'));
-
-        return $this->csv->download($filename, self::WAGE_COLUMNS, $rows);
     }
 
     private function filename(string $sheet): string
