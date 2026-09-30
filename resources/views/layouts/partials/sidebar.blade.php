@@ -21,6 +21,7 @@
                 ['route' => 'orders', 'icon' => 'clipboard', 'label' => __('Orders'), 'level' => 30],
                 ['route' => 'customers', 'icon' => 'users', 'label' => __('Customers'), 'level' => 30, 'when' => fn ($user) => $user->canSeeFinancials()],
                 ['route' => 'payments', 'icon' => 'receipt', 'label' => __('Payments'), 'level' => 30, 'when' => fn ($user) => $user->canSeeFinancials()],
+                ['route' => 'weekly-summary', 'icon' => 'chart', 'label' => __('Weekly summary'), 'level' => 30, 'when' => fn ($user) => $user->canSeeFinancials()],
             ],
         ],
         [
@@ -90,7 +91,7 @@
 {{-- On desktop the sidebar is pinned at full viewport height, and links and headings
      scale with vh so the owner's full list (20 links) fits one screen down to ~620px
      tall. overflow-y-auto stays only as a fallback for anything shorter. --}}
-<aside class="shrink-0 bg-navy text-cream lg:sticky lg:top-0 lg:flex lg:h-svh lg:w-64 lg:flex-col">
+<aside class="shrink-0 bg-navy text-cream print:hidden lg:sticky lg:top-0 lg:flex lg:h-svh lg:w-64 lg:flex-col">
     <div class="flex shrink-0 items-center justify-between gap-3 px-5 py-4 lg:py-[clamp(0.6rem,1.8vh,1.25rem)]">
         <a href="{{ route('dashboard') }}" class="flex min-w-0 items-center gap-3">
             <span class="grid size-10 shrink-0 place-items-center rounded-full bg-gold lg:size-9 text-sm font-bold text-ink">MC</span>

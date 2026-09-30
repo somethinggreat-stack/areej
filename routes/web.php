@@ -27,6 +27,7 @@ use App\Http\Controllers\Dashboard\SupplierController;
 use App\Http\Controllers\Dashboard\TimesheetController;
 use App\Http\Controllers\Dashboard\UserController;
 use App\Http\Controllers\Dashboard\WasteLogController;
+use App\Http\Controllers\Dashboard\WeeklySummaryController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EnquiryController;
 use Illuminate\Http\RedirectResponse;
@@ -163,6 +164,8 @@ Route::middleware(['auth', 'active'])->prefix('dashboard')->group(function (): v
             Route::get('order-book/{order}/edit', [OrderBookController::class, 'edit'])->name('order-book.edit');
             Route::put('order-book/{order}', [OrderBookController::class, 'update'])->name('order-book.update');
             Route::get('payments', [OrderBookController::class, 'payments'])->name('payments');
+            Route::get('weekly-summary', [WeeklySummaryController::class, 'index'])->name('weekly-summary');
+            Route::get('weekly-summary/export', [WeeklySummaryController::class, 'export'])->name('weekly-summary.export');
             Route::get('customers', [CustomerController::class, 'index'])->name('customers');
             Route::get('customers/{key}', [CustomerController::class, 'show'])->name('customers.show');
         });

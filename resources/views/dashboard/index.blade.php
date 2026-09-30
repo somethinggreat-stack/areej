@@ -4,6 +4,20 @@
 @section('subtitle', __('Welcome back, :name', ['name' => auth()->user()->name]))
 
 @section('content')
+    {{-- Monday and Tuesday: the notebook catch-up and last week's summary. --}}
+    @if ($can['money'] && (today()->isMonday() || today()->isTuesday()))
+        @php $lastWeek = today()->subWeek()->startOfWeek(); @endphp
+        <section class="card mb-6 flex flex-wrap items-center justify-between gap-4 border-gold/40 bg-gold/8 p-5">
+            <div>
+                <p class="text-sm font-semibold text-text">{{ __('Time to enter last week\'s orders') }}</p>
+                <p class="text-xs text-text-muted">{{ __('Week of :date — type them in from the notebook, then check the summary.', ['date' => $lastWeek->format('j M')]) }}</p>
+            </div>
+            <div class="flex flex-wrap gap-2">
+                <x-btn size="sm" icon="plus" :href="route('order-book.create', ['date' => $lastWeek->toDateString()])">{{ __('Enter orders') }}</x-btn>
+                <x-btn size="sm" variant="secondary" :href="route('weekly-summary', ['week' => $lastWeek->toDateString()])">{{ __('Last week\'s summary') }}</x-btn>
+            </div>
+        </section>
+    @endif
     {{-- ------------------------------------------------- what needs doing --}}
     @if ($alerts->isNotEmpty())
         <section id="alerts" class="mb-6">

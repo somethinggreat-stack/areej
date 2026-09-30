@@ -3,7 +3,7 @@
     $alerts = app(\App\Services\OperationsFeed::class)->alertCount($user);
 @endphp
 
-<header class="sticky top-0 z-30 border-b border-line bg-surface/90 backdrop-blur">
+<header class="sticky top-0 z-30 print:hidden border-b border-line bg-surface/90 backdrop-blur">
     <div class="flex items-center justify-between gap-3 px-4 py-3 sm:px-6 lg:px-8">
         <div class="min-w-0">
             <h1 class="truncate text-lg font-semibold text-text">@yield('title', __('Overview'))</h1>
