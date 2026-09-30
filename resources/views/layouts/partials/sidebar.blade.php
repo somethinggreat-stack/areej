@@ -19,6 +19,8 @@
                 ['route' => 'enquiries', 'icon' => 'inbox', 'label' => __('Enquiries'), 'level' => 30],
                 ['route' => 'quotes', 'icon' => 'file-text', 'label' => __('Quotes'), 'level' => 30, 'when' => fn ($user) => $user->canHandleQuotes()],
                 ['route' => 'orders', 'icon' => 'clipboard', 'label' => __('Orders'), 'level' => 30],
+                ['route' => 'customers', 'icon' => 'users', 'label' => __('Customers'), 'level' => 30, 'when' => fn ($user) => $user->canSeeFinancials()],
+                ['route' => 'payments', 'icon' => 'receipt', 'label' => __('Payments'), 'level' => 30, 'when' => fn ($user) => $user->canSeeFinancials()],
             ],
         ],
         [

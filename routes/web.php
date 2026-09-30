@@ -4,6 +4,7 @@ use App\Http\Controllers\Dashboard\AccountController;
 use App\Http\Controllers\Dashboard\ActivityController;
 use App\Http\Controllers\Dashboard\AttendanceController;
 use App\Http\Controllers\Dashboard\CalendarController;
+use App\Http\Controllers\Dashboard\CustomerController;
 use App\Http\Controllers\Dashboard\DishController;
 use App\Http\Controllers\Dashboard\EnquiryInboxController;
 use App\Http\Controllers\Dashboard\EquipmentController;
@@ -12,6 +13,7 @@ use App\Http\Controllers\Dashboard\ExcelImportController;
 use App\Http\Controllers\Dashboard\ExpenseController;
 use App\Http\Controllers\Dashboard\InventoryItemController;
 use App\Http\Controllers\Dashboard\MyTimesheetController;
+use App\Http\Controllers\Dashboard\OrderBookController;
 use App\Http\Controllers\Dashboard\OrderController;
 use App\Http\Controllers\Dashboard\OrderPaymentController;
 use App\Http\Controllers\Dashboard\PrepController;
@@ -154,6 +156,15 @@ Route::middleware(['auth', 'active'])->prefix('dashboard')->group(function (): v
             Route::delete('orders/items/{item}', [OrderController::class, 'destroyItem'])->name('orders.items.destroy');
             Route::post('orders/{order}/payments', [OrderPaymentController::class, 'store'])->name('orders.payments.store');
             Route::delete('payments/{payment}', [OrderPaymentController::class, 'destroy'])->name('payments.destroy');
+
+            // The simple order book: whole order on one page, entered weekly.
+            Route::get('order-book/new', [OrderBookController::class, 'create'])->name('order-book.create');
+            Route::post('order-book', [OrderBookController::class, 'store'])->name('order-book.store');
+            Route::get('order-book/{order}/edit', [OrderBookController::class, 'edit'])->name('order-book.edit');
+            Route::put('order-book/{order}', [OrderBookController::class, 'update'])->name('order-book.update');
+            Route::get('payments', [OrderBookController::class, 'payments'])->name('payments');
+            Route::get('customers', [CustomerController::class, 'index'])->name('customers');
+            Route::get('customers/{key}', [CustomerController::class, 'show'])->name('customers.show');
         });
     });
 

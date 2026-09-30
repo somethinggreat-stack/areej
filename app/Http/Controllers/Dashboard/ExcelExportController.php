@@ -127,7 +127,8 @@ class ExcelExportController extends Controller
                 'staff' => fn ($q) => $q->withTrashed(),
                 'order',
             ])
-            ->whereBetween('worked_on', [$from->toDateString(), $to->toDateString()])
+            ->whereDate('worked_on', '>=', $from->toDateString())
+            ->whereDate('worked_on', '<=', $to->toDateString())
             ->orderBy('worked_on')
             ->orderBy('scheduled_start_at')
             ->orderBy('clock_in_at')
@@ -168,7 +169,8 @@ class ExcelExportController extends Controller
 
         $rows = WagePayment::query()
             ->with('staff')
-            ->whereBetween('week_start', [$from->toDateString(), $to->toDateString()])
+            ->whereDate('week_start', '>=', $from->toDateString())
+            ->whereDate('week_start', '<=', $to->toDateString())
             ->orderBy('week_start')
             ->orderBy('id')
             ->get()

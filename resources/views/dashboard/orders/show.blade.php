@@ -17,6 +17,7 @@
         @endif
         @if ($money)
             <x-btn variant="secondary" size="sm" icon="receipt" :href="route('orders.invoice', $order)" target="_blank">{{ __('Invoice') }}</x-btn>
+            <x-btn size="sm" :href="route('order-book.edit', $order)">{{ __('Simple view') }}</x-btn>
         @endif
     </x-page-head>
 

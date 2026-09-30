@@ -35,7 +35,7 @@ class TimesheetController extends Controller
         return view('dashboard.timesheets.index', [
             'week' => $week,
             'payRun' => $payRun,
-            'payments' => WagePayment::where('week_start', $week->toDateString())
+            'payments' => WagePayment::whereDate('week_start', $week->toDateString())
                 ->get()
                 ->groupBy('staff_profile_id'),
             'totals' => $this->timesheet->payRunTotals($payRun),

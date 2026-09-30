@@ -30,9 +30,19 @@ class OrderController extends Controller
 
     public function index(Request $request): View
     {
-        $view = $request->string('view')->toString() ?: 'upcoming';
+        $view = $request->string('view')->toString() ?: 'all';
+
+        // Money paid in, less refunds, worked out in the query so "owing" and
+        // "paid" can be filtered and paged rather than sorted out afterwards.
+        $paid = '(select coalesce(sum(case when kind = \'refund\' then -amount else amount end), 0) from order_payments where order_payments.order_id = orders.id)';
 
         $orders = Order::query()
+            ->when($request->filled('from'), fn ($q) => $q->whereDate('event_date', '>=', $request->date('from')))
+            ->when($request->filled('to'), fn ($q) => $q->whereDate('event_date', '<=', $request->date('to')))
+            ->when($view === 'pending', fn ($q) => $q->whereNotIn('status', ['completed', 'cancelled']))
+            ->when($view === 'completed', fn ($q) => $q->where('status', 'completed'))
+            ->when($view === 'owing', fn ($q) => $q->where('status', '!=', 'cancelled')->whereRaw("total_amount > {$paid}"))
+            ->when($view === 'paid', fn ($q) => $q->where('status', '!=', 'cancelled')->where('total_amount', '>', 0)->whereRaw("total_amount <= {$paid}"))
             ->with(['payments', 'takenBy'])
             ->when($request->filled('q'), function ($query) use ($request): void {
                 $term = '%'.$request->string('q')->toString().'%';
@@ -46,7 +56,8 @@ class OrderController extends Controller
             ->when($view === 'past', fn ($q) => $q->whereDate('event_date', '<', today()))
             ->when($view === 'cancelled', fn ($q) => $q->where('status', 'cancelled'))
             ->when($view === 'unpaid', fn ($q) => $q->where('total_amount', '>', 0)->whereNot('status', 'cancelled'))
-            ->orderBy('event_date', $view === 'past' ? 'desc' : 'asc')
+            ->orderBy('event_date', in_array($view, ['upcoming', 'unpaid'], true) ? 'asc' : 'desc')
+            ->orderByDesc('id')
             ->paginate(25)
             ->withQueryString();
 

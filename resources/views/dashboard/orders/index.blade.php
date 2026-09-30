@@ -5,9 +5,13 @@
 @section('content')
     @php $money = auth()->user()->canSeeFinancials(); @endphp
 
-    <x-page-head :title="__('Orders')" :subtitle="__('Every confirmed job on the books')">
-        <x-btn variant="secondary" :href="route('calendar')" icon="calendar">{{ __('Diary') }}</x-btn>
-        <x-btn :href="route('orders.create')" icon="plus">{{ __('Take an order') }}</x-btn>
+    <x-page-head :title="__('Orders')" :subtitle="__('Every order, newest first. Open one to change it or record a payment.')">
+        @if ($money)
+            <x-btn variant="secondary" :href="route('customers')" icon="users">{{ __('Customers') }}</x-btn>
+            <x-btn :href="route('order-book.create')" icon="plus">{{ __('Enter orders') }}</x-btn>
+        @else
+            <x-btn :href="route('orders.create')" icon="plus">{{ __('Take an order') }}</x-btn>
+        @endif
     </x-page-head>
     @include('dashboard.partials.export-button', ['sheet' => 'orders'])
 
@@ -24,32 +28,36 @@
     <x-filters :reset="route('orders')">
         <input type="hidden" name="view" value="{{ $view }}">
         <x-field name="q" :label="__('Search')" :value="request('q')" class="min-w-[12rem] flex-1"
-                 placeholder="{{ __('Name, reference, phone or venue') }}" />
+                 placeholder="{{ __('Name, reference or phone') }}" />
+        <x-field name="from" type="date" :label="__('From')" :value="request('from')" />
+        <x-field name="to" type="date" :label="__('To')" :value="request('to')" />
     </x-filters>
 
     <x-tabs :current="$view" :tabs="[
-        'upcoming' => __('Upcoming'),
-        'unpaid' => __('Unpaid'),
-        'past' => __('Past'),
-        'cancelled' => __('Cancelled'),
         'all' => __('All'),
+        'pending' => __('Pending'),
+        'completed' => __('Completed'),
+        'owing' => __('Owing'),
+        'paid' => __('Paid'),
+        'cancelled' => __('Cancelled'),
     ]" />
 
     @if ($orders->isEmpty())
         <x-empty icon="clipboard" :title="__('No jobs here')"
                  :body="__('Accepted quotes land here automatically. Orders taken by phone can be added by hand.')">
-            <x-btn :href="route('orders.create')" icon="plus">{{ __('Take an order') }}</x-btn>
+            <x-btn :href="$money ? route('order-book.create') : route('orders.create')" icon="plus">{{ __('Enter orders') }}</x-btn>
             @can('handle-quotes')
                 <x-btn variant="secondary" :href="route('quotes')">{{ __('See quotes') }}</x-btn>
             @endcan
         </x-empty>
     @else
-        <x-table :head="[__('Customer'), __('Date'), __('Guests'), __('Status'), $money ? __('Total') : '', $money ? __('Owed') : '', '']"
+        <x-table :head="[__('Customer'), __('Date'), $money ? __('Paid') : __('Guests'), __('Status'), $money ? __('Total') : '', $money ? __('Owed') : '', '']"
                  :align="['start', 'start', 'end', 'start', 'end', 'end', 'end']">
             @foreach ($orders as $order)
-                <tr data-row-href="{{ route('orders.show', $order) }}" class="cursor-pointer transition-colors hover:bg-surface-2">
+                @php $open = $money ? route('order-book.edit', $order) : route('orders.show', $order); @endphp
+                <tr data-row-href="{{ $open }}" class="cursor-pointer transition-colors hover:bg-surface-2">
                     <td class="px-4 py-3">
-                        <a href="{{ route('orders.show', $order) }}" class="font-medium text-text hover:text-link">
+                        <a href="{{ $open }}" class="font-medium text-text hover:text-link">
                             {{ $order->customer_name }}
                         </a>
                         <span class="block text-xs text-text-faint tabular-nums">{{ $order->reference }}</span>
@@ -60,12 +68,13 @@
                             <span class="block truncate text-xs text-text-faint">{{ $order->venue }}</span>
                         @endif
                     </td>
-                    <td class="px-4 py-3 text-end tabular-nums text-text-muted">{{ $order->guests ?: '—' }}</td>
+                    <td class="px-4 py-3 text-end tabular-nums text-text-muted">
+                        @if ($money){{ money($order->paidAmount()) }}@else{{ $order->guests ?: '—' }}@endif
+                    </td>
                     <td class="px-4 py-3">
-                        <x-badge :tone="$order->statusTone()">{{ $order->statusLabel() }}</x-badge>
-                        @if ($order->isUrgent() && $order->status !== 'cancelled')
-                            <x-badge tone="warn" class="ms-1">{{ __('Soon') }}</x-badge>
-                        @endif
+                        <x-badge :tone="$order->status === 'completed' ? 'good' : ($order->status === 'cancelled' ? 'bad' : 'info')">
+                            {{ $order->status === 'completed' ? __('Completed') : ($order->status === 'cancelled' ? __('Cancelled') : __('Pending')) }}
+                        </x-badge>
                     </td>
                     @if ($money)
                         <td class="px-4 py-3 text-end font-semibold"><x-money :pence="$order->total_amount" /></td>

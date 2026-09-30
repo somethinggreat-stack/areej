@@ -156,7 +156,49 @@ function initRowLinks() {
     });
 }
 
+/* ------------------------------------------ order book: items and totals */
+function initOrderItems() {
+    const table = document.querySelector('[data-item-rows]');
+    if (!table) return;
+
+    const body = table.querySelector('tbody');
+    const total = document.querySelector('[data-total]');
+    const pounds = (pence) => '£' + (pence / 100).toFixed(2);
+
+    const recalc = () => {
+        let sum = 0;
+        body.querySelectorAll('[data-item-row]').forEach((row) => {
+            const qty = parseFloat(row.querySelector('[data-qty]').value) || 0;
+            const price = parseFloat(row.querySelector('[data-price]').value) || 0;
+            const line = Math.round((qty || 1) * price * 100);
+            row.querySelector('[data-line]').textContent = price ? pounds(line) : '—';
+            sum += price ? line : 0;
+        });
+        // The typed amount always wins; this only shows what the items add up to.
+        if (total) total.placeholder = sum ? (sum / 100).toFixed(2) : '';
+    };
+
+    body.addEventListener('input', recalc);
+
+    document.querySelector('[data-add-item]')?.addEventListener('click', () => {
+        const rows = body.querySelectorAll('[data-item-row]');
+        const copy = rows[rows.length - 1].cloneNode(true);
+        const index = rows.length;
+
+        copy.querySelectorAll('input, select').forEach((field) => {
+            field.name = field.name.replace(/items\[\d+\]/, `items[${index}]`);
+            if (field.tagName === 'INPUT') field.value = '';
+        });
+        copy.querySelector('[data-line]').textContent = '—';
+        body.appendChild(copy);
+        copy.querySelector('input').focus();
+    });
+
+    recalc();
+}
+
 document.addEventListener('DOMContentLoaded', () => {
+    initOrderItems();
     initRowLinks();
     initTheme();
     initNav();
