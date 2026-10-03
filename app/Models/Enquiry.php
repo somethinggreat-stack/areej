@@ -37,12 +37,14 @@ class Enquiry extends Model
         'internal_notes',
         'source',
         'ip_address',
+        'privacy_accepted_at',
     ];
 
     protected function casts(): array
     {
         return [
             'extras' => 'array',
+            'privacy_accepted_at' => 'datetime',
             'event_date' => 'date',
             'guests' => 'integer',
         ];

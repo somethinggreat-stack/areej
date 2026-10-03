@@ -46,6 +46,7 @@ class EnquiryFormTest extends TestCase
     {
         $this->post('/contact', [
             'name' => 'Amina Begum',
+            'privacy_consent' => '1',
             'phone' => '07700 900456',
             'email' => 'amina@example.com',
             'event_type' => 'Weddings',

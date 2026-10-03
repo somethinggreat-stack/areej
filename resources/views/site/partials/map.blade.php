@@ -38,13 +38,21 @@
 
         <div class="relative overflow-hidden border border-ink/10 bg-sand">
             {{-- Pinned on the exact coordinates from their Google Business Profile,
-                 not a geocoded street name, which lands mid-road. --}}
-            <iframe
-                src="https://www.google.com/maps?q={{ $mc['geo']['lat'] }},{{ $mc['geo']['lng'] }}&z=17&hl=en&output=embed"
-                title="Map showing Midland Catering, Unit 3 Landor Street, Birmingham B8 1AG"
-                class="h-[22rem] w-full lg:h-[26rem]"
-                loading="lazy" referrerpolicy="no-referrer-when-downgrade"
-                style="border:0"></iframe>
+                 not a geocoded street name, which lands mid-road. Google sets
+                 cookies, so the map only loads once the visitor agrees. --}}
+            <div data-consent-map
+                 data-src="https://www.google.com/maps?q={{ $mc['geo']['lat'] }},{{ $mc['geo']['lng'] }}&z=17&hl=en&output=embed"
+                 data-title="Map showing Midland Catering, Unit 3 Landor Street, Birmingham B8 1AG"
+                 class="flex h-[22rem] w-full flex-col items-center justify-center gap-4 px-8 text-center lg:h-[26rem]">
+                <p class="max-w-xs text-sm leading-relaxed text-ink/70">
+                    The map comes from Google, which sets its own cookies.
+                    <a href="{{ route('site.cookies') }}" class="link-underline text-ink">Cookie policy</a>
+                </p>
+                <button type="button" data-consent-map-load
+                        class="inline-flex h-11 items-center rounded-full border border-ink/25 px-6 text-[0.7rem] font-bold tracking-[0.18em] text-ink uppercase transition-colors hover:bg-ink hover:text-cream">
+                    Show map
+                </button>
+            </div>
         </div>
     </div>
 </section>

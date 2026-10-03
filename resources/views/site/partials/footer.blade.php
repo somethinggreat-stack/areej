@@ -80,9 +80,15 @@
 
         <div class="mt-16 flex flex-col gap-6 border-t border-cream/10 pt-8 sm:flex-row sm:items-center sm:justify-between">
             <p class="text-[0.72rem] tracking-[0.2em] text-cream/58">
-                © {{ date('Y') }} {{ $mc['legal_name'] }}. All rights reserved.
+                © {{ date('Y') }} {{ $mc['legal_name'] }}, company no. {{ $mc['company_number'] }}. All rights reserved.
             </p>
             <div class="flex flex-wrap items-center gap-x-6 gap-y-3">
+                <a href="{{ route('site.privacy') }}"
+                   class="link-underline text-[0.7rem] font-semibold tracking-[0.2em] text-cream/58 uppercase transition-colors hover:text-gold">Privacy</a>
+                <a href="{{ route('site.cookies') }}"
+                   class="link-underline text-[0.7rem] font-semibold tracking-[0.2em] text-cream/58 uppercase transition-colors hover:text-gold">Cookies</a>
+                <button type="button" data-cookie-settings
+                        class="link-underline text-[0.7rem] font-semibold tracking-[0.2em] text-cream/58 uppercase transition-colors hover:text-gold">Cookie settings</button>
                 <a href="{{ $mc['maps_url'] }}" target="_blank" rel="noopener noreferrer"
                    class="link-underline text-[0.7rem] font-semibold tracking-[0.2em] text-cream/58 uppercase transition-colors hover:text-gold">Directions</a>
                 <a href="{{ $mc['google']['reviews_url'] }}" target="_blank" rel="noopener noreferrer"

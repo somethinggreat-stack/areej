@@ -34,8 +34,9 @@ class EnquiryController extends Controller
         RateLimiter::hit($key, 3600);
 
         $enquiry = Enquiry::create([
-            ...$request->safe()->except('company_website'),
+            ...$request->safe()->except(['company_website', 'privacy_consent']),
             'ip_address' => $request->ip(),
+            'privacy_accepted_at' => now(),
             'source' => 'website',
         ]);
 

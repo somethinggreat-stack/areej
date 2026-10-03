@@ -31,6 +31,8 @@ class StoreEnquiryRequest extends FormRequest
             'dietary' => ['nullable', 'string', 'max:500'],
             'message' => ['nullable', 'string', 'max:2000'],
 
+            'privacy_consent' => ['accepted'],
+
             // Honeypot: a real person never fills this in.
             'company_website' => ['prohibited'],
         ];
@@ -56,6 +58,7 @@ class StoreEnquiryRequest extends FormRequest
             'phone.regex' => __('That phone number looks incomplete.'),
             'email.email' => __('That email address looks incorrect.'),
             'guests.max' => __('We quote up to 2,000 guests — please call us for anything larger.'),
+            'privacy_consent.accepted' => __('Please tick the box to say you have read our privacy notice.'),
             'event_date.after_or_equal' => __('Please choose a date in the future.'),
         ];
     }

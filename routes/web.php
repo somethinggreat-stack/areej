@@ -47,6 +47,8 @@ Route::name('site.')->group(function (): void {
     Route::view('/menu', 'site.menu')->name('menu');
     Route::view('/gallery', 'site.gallery')->name('gallery');
     Route::view('/about', 'site.about')->name('about');
+    Route::view('/privacy', 'site.privacy')->name('privacy');
+    Route::view('/cookies', 'site.cookies')->name('cookies');
 
     Route::get('/contact', [EnquiryController::class, 'create'])->name('contact');
     Route::post('/contact', [EnquiryController::class, 'store'])->name('enquiry.store');
@@ -65,7 +67,7 @@ Route::name('site.')->group(function (): void {
  * service in config/catering_services.php is listed without touching this.
  */
 Route::get('/sitemap.xml', function () {
-    $urls = collect(['site.home', 'site.services', 'site.menu', 'site.gallery', 'site.about', 'site.contact'])
+    $urls = collect(['site.home', 'site.services', 'site.menu', 'site.gallery', 'site.about', 'site.contact', 'site.privacy', 'site.cookies'])
         ->map(fn (string $name): string => route($name))
         ->merge(collect(config('catering_services'))->map(fn (array $service): string => route('site.service', $service['slug'])));
 

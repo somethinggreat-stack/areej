@@ -97,6 +97,7 @@ class SiteRoutesTest extends TestCase
     {
         $this->post('/contact', [
             'name' => 'Sara Khan',
+            'privacy_consent' => '1',
             'phone' => '07700 900123',
             'event_type' => 'Weddings',
             'event_date' => now()->addMonth()->toDateString(),

@@ -189,6 +189,13 @@
                         </div>
 
                         <div class="border-t border-cream/10 px-5 py-7 sm:px-10">
+                            <label for="privacy_consent" class="mb-6 flex cursor-pointer items-start gap-3 text-sm leading-relaxed text-cream/75">
+                                <input id="privacy_consent" name="privacy_consent" type="checkbox" value="1" required @checked(old('privacy_consent'))
+                                       @error('privacy_consent') aria-invalid="true" @enderror
+                                       class="mt-0.5 size-5 shrink-0 rounded border-cream/30 bg-transparent text-gold focus:ring-2 focus:ring-gold/40">
+                                <span>I agree to {{ $mc['name'] }} using these details to reply to my enquiry and quote for my event, as explained in the
+                                    <a href="{{ route('site.privacy') }}" target="_blank" class="link-underline text-cream">privacy notice</a>.</span>
+                            </label>
                             <button type="submit"
                                     class="group/btn inline-flex min-h-14 w-full items-center justify-center gap-3 rounded-full bg-gold px-8 py-4 text-sm font-bold tracking-[0.2em] text-ink uppercase transition-colors hover:bg-gold-lit sm:w-auto">
                                 Send enquiry

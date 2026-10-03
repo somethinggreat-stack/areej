@@ -70,5 +70,6 @@
 
     @include('site.partials.footer')
     @include('site.partials.chrome')
+    @include('site.partials.cookie-banner')
 </body>
 </html>

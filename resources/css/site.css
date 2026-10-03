@@ -464,3 +464,70 @@
     animation: none;
   }
 }
+
+/* ==========================================================================
+   Policy pages (privacy, cookies): plain readable text, no motion.
+   ========================================================================== */
+
+.legal {
+  color: color-mix(in oklab, var(--color-cream) 78%, transparent);
+  font-size: 1rem;
+  line-height: 1.75;
+}
+.legal h2 {
+  margin-top: 2.75rem;
+  margin-bottom: 0.9rem;
+  font-family: var(--font-display);
+  font-size: clamp(1.4rem, 2.4vw, 1.8rem);
+  font-weight: 300;
+  line-height: 1.2;
+  color: var(--color-cream);
+}
+.legal p,
+.legal ul {
+  margin-top: 0.9rem;
+}
+.legal ul {
+  list-style: disc;
+  padding-inline-start: 1.25rem;
+}
+.legal li + li {
+  margin-top: 0.4rem;
+}
+.legal strong {
+  color: var(--color-cream);
+  font-weight: 600;
+}
+.legal a {
+  color: var(--color-gold);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.legal-table {
+  margin-top: 1.25rem;
+  overflow-x: auto;
+  border: 1px solid color-mix(in oklab, var(--color-cream) 12%, transparent);
+}
+.legal table {
+  width: 100%;
+  min-width: 34rem;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+.legal th,
+.legal td {
+  padding: 0.75rem 1rem;
+  text-align: start;
+  vertical-align: top;
+  border-bottom: 1px solid color-mix(in oklab, var(--color-cream) 10%, transparent);
+}
+.legal th {
+  color: var(--color-cream);
+  font-weight: 600;
+}
+.legal td:first-child {
+  font-family: ui-monospace, monospace;
+  font-size: 0.82rem;
+  color: var(--color-cream);
+  white-space: nowrap;
+}

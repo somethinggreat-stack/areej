@@ -8,6 +8,7 @@ import {
     initPinnedStory, initServicesJourney, initProcessTimeline, initCollage, initSpotlight,
 } from './modules/interactions';
 import { initGallery, initTestimonials, initGuestPresets } from './modules/gallery';
+import { initCookieConsent } from './modules/consent';
 
 gsap.registerPlugin(ScrollTrigger, SplitText, DrawSVGPlugin);
 gsap.defaults({ ease: 'expo.out', duration: 1.1 });
@@ -411,6 +412,9 @@ function runMenuCourses() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+    // Consent before anything optional can load.
+    initCookieConsent();
+
     // Chrome first — these must work whether or not the loader plays.
     runNav();
     runHeader();
