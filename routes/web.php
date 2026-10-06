@@ -45,6 +45,14 @@ Route::name('site.')->group(function (): void {
     Route::view('/', 'site.home')->name('home');
     Route::view('/services', 'site.services')->name('services');
     Route::view('/menu', 'site.menu')->name('menu');
+    Route::view('/menu/book', 'site.print.menu-book')->name('menu.book');
+    Route::get('/packages/{slug}', function (string $slug) {
+        $packageMenu = collect(config('packages'))->firstWhere('slug', $slug);
+
+        abort_if($packageMenu === null, 404);
+
+        return view('site.print.packages', ['packageMenu' => $packageMenu]);
+    })->name('packages');
     Route::view('/gallery', 'site.gallery')->name('gallery');
     Route::view('/about', 'site.about')->name('about');
     Route::view('/privacy', 'site.privacy')->name('privacy');

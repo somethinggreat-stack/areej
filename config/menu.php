@@ -62,8 +62,8 @@ return [
                 'signature' => true,
             ],
             [
-                'name' => 'Chicken Mali Boti',
-                'desc' => 'Cream and cheese marinade, mild and tender',
+                'name' => 'Chicken Malai Boti',
+                'desc' => 'Cream marinade, mild and tender',
                 'tags' => [],
                 'signature' => false,
             ],
@@ -74,8 +74,8 @@ return [
                 'signature' => false,
             ],
             [
-                'name' => 'Sheesh Kebab',
-                'desc' => 'Minced meat with onion, coriander and green chilli',
+                'name' => 'Chicken Sheesh Kebab',
+                'desc' => 'Minced chicken with onion, coriander and green chilli',
                 'tags' => [],
                 'signature' => true,
             ],
@@ -321,7 +321,7 @@ return [
         'sub' => 'To finish',
         'blurb' => 'Warm, cold and syrup-soaked — the part of the table nobody leaves early.',
         'image' => 'halwa-silver',
-        'accent' => 'curry-brass-pot',
+        'accent' => 'gulab-jamun-spoon',
         'dishes' => [
             [
                 'name' => 'Gajrella',
@@ -402,7 +402,7 @@ return [
         'sub' => 'Poured all evening',
         'blurb' => 'A tea station is the single best thing you can add to a late-running event.',
         'image' => 'desi-tea',
-        'accent' => 'mezze-table',
+        'accent' => 'pink-tea',
         'dishes' => [
             [
                 'name' => 'Desi Tea',

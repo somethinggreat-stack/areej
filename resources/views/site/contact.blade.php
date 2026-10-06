@@ -219,7 +219,7 @@
                             </svg>
                         </span>
                         <span>
-                            <span class="block text-[0.6rem] font-semibold tracking-[0.2em] text-cream/58 uppercase">The kitchen</span>
+                            <span class="block text-[0.6rem] font-semibold tracking-[0.2em] text-cream/58 uppercase">For inquiries, call</span>
                             <span class="font-display text-2xl text-cream">{{ $mc['phone'] }}</span>
                         </span>
                     </a>

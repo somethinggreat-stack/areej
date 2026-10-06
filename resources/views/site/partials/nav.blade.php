@@ -60,7 +60,7 @@
              whole panel fits one screen; address and hours live on the contact page. --}}
         <div data-nav-aside class="relative z-10 grid shrink-0 grid-cols-[1fr_auto] items-end gap-x-4 gap-y-6 border-t border-cream/10 px-(--spacing-gutter) pt-6 pb-[max(1.5rem,env(safe-area-inset-bottom))] sm:grid-cols-2 sm:items-start sm:gap-8 sm:py-8 lg:grid-cols-4">
             <div>
-                <p class="eyebrow mb-3 text-gold/70">Call the kitchen</p>
+                <p class="eyebrow mb-3 text-gold/70">For inquiries, call</p>
                 <a href="{{ $mc['phone_href'] }}" class="link-underline font-display text-xl text-cream">{{ $mc['phone'] }}</a>
             </div>
             <a href="{{ route('site.contact') }}" data-nav-close
